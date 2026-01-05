@@ -6,4 +6,8 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "texsmith>=0.2.1",
+    "texsmith-exam",
 ]
+
+[tool.uv.sources]
+texsmith-exam = { path = "texsmith_exam" }

@@ -30,133 +30,6 @@
   #1
 }
 
-\newif\iftexsmithPartsOpen
-\newif\iftexsmithSubpartsOpen
-\newif\iftexsmithSubsubpartsOpen
-
-\newcommand{\texsmithCloseSubsubparts}{%
-  \iftexsmithSubsubpartsOpen
-    \end{subsubparts}%
-    \texsmithSubsubpartsOpenfalse
-  \fi
-}
-
-\newcommand{\texsmithCloseSubparts}{%
-  \texsmithCloseSubsubparts
-  \iftexsmithSubpartsOpen
-    \end{subparts}%
-    \texsmithSubpartsOpenfalse
-  \fi
-}
-
-\newcommand{\texsmithCloseParts}{%
-  \texsmithCloseSubparts
-  \iftexsmithPartsOpen
-    \end{parts}%
-    \texsmithPartsOpenfalse
-  \fi
-}
-
-\newcommand{\texsmithQuestion}[2][]{%
-  \texsmithCloseParts
-  \def\texsmithTmp{#2}%
-  \def\texsmithPts{#1}%
-  \if\relax\detokenize{\texsmithTmp}\relax
-    \if\relax\detokenize{\texsmithPts}\relax
-      \question
-    \else
-      \question[\texsmithPts]%
-    \fi
-  \else
-    \if\relax\detokenize{\texsmithPts}\relax
-      \titledquestion{#2}%
-    \else
-      \titledquestion{#2}[\texsmithPts]%
-    \fi
-  \fi
-}
-
-\newcommand{\texsmithPart}[2][]{%
-  \texsmithCloseSubparts
-  \iftexsmithPartsOpen\else
-    \begin{parts}%
-    \texsmithPartsOpentrue
-  \fi
-  \def\texsmithTmp{#2}%
-  \def\texsmithPts{#1}%
-  \if\relax\detokenize{\texsmithTmp}\relax
-    \if\relax\detokenize{\texsmithPts}\relax
-      \part
-    \else
-      \part[\texsmithPts]%
-    \fi
-  \else
-    \if\relax\detokenize{\texsmithPts}\relax
-      \part #2%
-    \else
-      \part[\texsmithPts] #2%
-    \fi
-  \fi
-}
-
-\newcommand{\texsmithSubpart}[2][]{%
-  \iftexsmithPartsOpen\else
-    \begin{parts}%
-    \texsmithPartsOpentrue
-  \fi
-  \iftexsmithSubpartsOpen\else
-    \begin{subparts}%
-    \texsmithSubpartsOpentrue
-  \fi
-  \def\texsmithTmp{#2}%
-  \def\texsmithPts{#1}%
-  \if\relax\detokenize{\texsmithTmp}\relax
-    \if\relax\detokenize{\texsmithPts}\relax
-      \subpart
-    \else
-      \subpart[\texsmithPts]%
-    \fi
-  \else
-    \if\relax\detokenize{\texsmithPts}\relax
-      \subpart #2%
-    \else
-      \subpart[\texsmithPts] #2%
-    \fi
-  \fi
-}
-
-\newcommand{\texsmithSubsubpart}[2][]{%
-  \iftexsmithPartsOpen\else
-    \begin{parts}%
-    \texsmithPartsOpentrue
-  \fi
-  \iftexsmithSubpartsOpen\else
-    \begin{subparts}%
-    \texsmithSubpartsOpentrue
-  \fi
-  \iftexsmithSubsubpartsOpen\else
-    \begin{subsubparts}%
-    \texsmithSubsubpartsOpentrue
-  \fi
-  \def\texsmithTmp{#2}%
-  \def\texsmithPts{#1}%
-  \if\relax\detokenize{\texsmithTmp}\relax
-    \if\relax\detokenize{\texsmithPts}\relax
-      \subsubpart
-    \else
-      \subsubpart[\texsmithPts]%
-    \fi
-  \else
-    \if\relax\detokenize{\texsmithPts}\relax
-      \subsubpart #2%
-    \else
-      \subsubpart[\texsmithPts] #2%
-    \fi
-  \fi
-}
-
-\AtEndDocument{\texsmithCloseParts}
-
 \BLOCK{ set document_type = exam_type_raw|lower }
 \BLOCK{ if document_type in ["te", "travail ecrit", "travail écrit"] }
 \BLOCK{ set document_type_label = "Travail \\\\'Ecrit" }
@@ -244,11 +117,10 @@
   \BLOCK{ endif }
 \end{coverpages}
 
-\BLOCK{ set has_questions = "\\texsmithQuestion" in mainmatter }
+\BLOCK{ set has_questions = ("\\question" in mainmatter) or ("\\titledquestion" in mainmatter) }
 \BLOCK{ if has_questions }
 \begin{questions}
 \VAR{mainmatter}
-\texsmithCloseParts
 \end{questions}
 \BLOCK{ else }
 \PackageWarning{texsmith}{No questions found; exam.cls may fail to compile.}

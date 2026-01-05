@@ -30,7 +30,6 @@ fragments = [
     "ts-extra",
     "ts-code",
 ]
-override = ["heading.tex"]
 
 [latex.template.attributes.title]
 default = ""
