@@ -1,0 +1,13 @@
+\BLOCK{- set normalized = text|trim -}
+\BLOCK{- set empty_title = normalized in ["", "_", "\\_"] -}
+\BLOCK{- if level == 1 -}
+\BLOCK{ if empty_title }\texsmithQuestion{}\BLOCK{ else }\texsmithQuestion{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{- elif level == 2 -}
+\BLOCK{ if empty_title }\texsmithPart{}\BLOCK{ else }\texsmithPart{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{- elif level == 3 -}
+\BLOCK{ if empty_title }\texsmithSubpart{}\BLOCK{ else }\texsmithSubpart{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{- elif level == 4 -}
+\BLOCK{ if empty_title }\texsmithSubsubpart{}\BLOCK{ else }\texsmithSubsubpart{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{- else -}
+\textbf{\VAR{text}}\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{- endif -}

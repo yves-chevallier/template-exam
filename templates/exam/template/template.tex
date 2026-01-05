@@ -1,0 +1,222 @@
+\BLOCK{ set exam_type_raw = type|default('exam')|string }
+\BLOCK{ set exam_type = exam_type_raw|lower }
+\BLOCK{ set title_value = title|default('')|trim }
+\BLOCK{ set author_value = author|default('')|trim }
+\BLOCK{ set date_value = date|default('')|trim }
+\documentclass[a4paper,twoside,addpoints]{exam}
+
+\usepackage[svgnames,dvipsnames,x11names]{xcolor}
+\VAR{extra_packages}
+\usepackage{graphicx}
+\usepackage[\VAR{language|default('french')}]{babel}
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue, citecolor=NavyBlue]{hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{lastpage}
+\usepackage{parskip}
+\usepackage{heiglogo}
+
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{%
+  \PassOptionsToPackage{most,skins,breakable}{tcolorbox}%
+  \usepackage{tcolorbox}%
+}
+\makeatother
+
+\newtcolorbox{examrules}[1][]{%
+  enhanced jigsaw,
+  sharp corners,
+  colback=white,
+  borderline={1pt}{-2pt}{black},
+  #1
+}
+
+\newif\iftexsmithPartsOpen
+\newif\iftexsmithSubpartsOpen
+\newif\iftexsmithSubsubpartsOpen
+
+\newcommand{\texsmithCloseSubsubparts}{%
+  \iftexsmithSubsubpartsOpen
+    \end{subsubparts}%
+    \texsmithSubsubpartsOpenfalse
+  \fi
+}
+
+\newcommand{\texsmithCloseSubparts}{%
+  \texsmithCloseSubsubparts
+  \iftexsmithSubpartsOpen
+    \end{subparts}%
+    \texsmithSubpartsOpenfalse
+  \fi
+}
+
+\newcommand{\texsmithCloseParts}{%
+  \texsmithCloseSubparts
+  \iftexsmithPartsOpen
+    \end{parts}%
+    \texsmithPartsOpenfalse
+  \fi
+}
+
+\newcommand{\texsmithQuestion}[1]{%
+  \texsmithCloseParts
+  \def\texsmithTmp{#1}%
+  \if\relax\detokenize{\texsmithTmp}\relax
+    \question
+  \else
+    \titledquestion{#1}%
+  \fi
+}
+
+\newcommand{\texsmithPart}[1]{%
+  \texsmithCloseSubparts
+  \iftexsmithPartsOpen\else
+    \begin{parts}%
+    \texsmithPartsOpentrue
+  \fi
+  \def\texsmithTmp{#1}%
+  \if\relax\detokenize{\texsmithTmp}\relax
+    \part
+  \else
+    \part #1%
+  \fi
+}
+
+\newcommand{\texsmithSubpart}[1]{%
+  \iftexsmithPartsOpen\else
+    \begin{parts}%
+    \texsmithPartsOpentrue
+  \fi
+  \iftexsmithSubpartsOpen\else
+    \begin{subparts}%
+    \texsmithSubpartsOpentrue
+  \fi
+  \def\texsmithTmp{#1}%
+  \if\relax\detokenize{\texsmithTmp}\relax
+    \subpart
+  \else
+    \subpart #1%
+  \fi
+}
+
+\newcommand{\texsmithSubsubpart}[1]{%
+  \iftexsmithPartsOpen\else
+    \begin{parts}%
+    \texsmithPartsOpentrue
+  \fi
+  \iftexsmithSubpartsOpen\else
+    \begin{subparts}%
+    \texsmithSubpartsOpentrue
+  \fi
+  \iftexsmithSubsubpartsOpen\else
+    \begin{subsubparts}%
+    \texsmithSubsubpartsOpentrue
+  \fi
+  \def\texsmithTmp{#1}%
+  \if\relax\detokenize{\texsmithTmp}\relax
+    \subsubpart
+  \else
+    \subsubpart #1%
+  \fi
+}
+
+\AtEndDocument{\texsmithCloseParts}
+
+\BLOCK{ set document_type = exam_type_raw|lower }
+\BLOCK{ if document_type in ["te", "travail ecrit", "travail écrit"] }
+\BLOCK{ set document_type_label = "Travail \\\\'Ecrit" }
+\BLOCK{ else }
+\BLOCK{ set document_type_label = exam_type_raw|default("Exam") }
+\BLOCK{ endif }
+\BLOCK{ set display_title = title_value if title_value else (document_type_label ~ " " ~ course) }
+
+\title{\VAR{display_title}}
+\author{\VAR{author}}
+
+\def\thedate{\VAR{date_value if date_value else "\\\\today"}}
+\def\department{\VAR{department}}
+\def\school{\VAR{school}}
+\def\documentType{\VAR{document_type_label}}
+\def\course{\VAR{course}}
+\def\duration{\VAR{duration|default('')}}
+
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \heiglogo[color=black]
+  \null
+  \vskip 8em%
+  \begin{center}%
+    {\LARGE \@title \par}%
+    \ifprintanswers
+      \large \textbf{Solution}%
+    \fi
+    \vskip 1.0em%
+    {\itshape\department\par}%
+    \vskip .2em%
+    {\itshape\school\par}%
+    \vskip 2.5em%
+    {%
+      \lineskip .2em%
+      \begin{minipage}{0.8 \textwidth}%
+        \begin{center}%
+          \begin{tabular}[t]{c}%
+            \@author
+          \end{tabular}\par
+        \end{center}%
+      \end{minipage}%
+    }%
+    \vskip 1em%
+    {\large \thedate}%
+  \end{center}%
+  \par
+  \vskip 1.5em%
+}
+
+\firstpageheader{\school~/~\ifprintanswers Solution \fi \documentType~\course}{}{\enspace\makebox[6cm]{}\bfseries Nom/Pr\\'enom :\enspace\makebox[6cm]{\hrulefill}}
+\runningheader{\school~/~\ifprintanswers Solution \fi \documentType~\course}{}{\enspace\makebox[6cm]{}\bfseries Nom/Pr\\'enom :\enspace\makebox[6cm]{\hrulefill}}
+\footer{\rightmark}{Page \thepage\ sur \pageref{LastPage}}{\course}
+\pagestyle{foot}
+\makeatother
+
+\begin{document}
+\begin{coverpages}
+  \maketitle
+  \thispagestyle{empty}
+
+  \begin{center}
+    \noindent Durée : \duration~minutes
+    \vfil
+  \end{center}
+
+  \begin{center}
+    \gradetable[v][questions]
+  \end{center}
+  \vfil
+
+  \BLOCK{ if rules }
+  \begin{center}
+    \begin{examrules}
+      \textbf{Consignes : }
+      \vskip 1em%
+      \begin{itemize}
+      \BLOCK{ for rule in rules }
+        \item \VAR{rule}
+      \BLOCK{ endfor }
+      \end{itemize}
+    \end{examrules}
+  \end{center}
+  \BLOCK{ endif }
+\end{coverpages}
+
+\BLOCK{ set has_questions = "\\texsmithQuestion" in mainmatter }
+\BLOCK{ if has_questions }
+\begin{questions}
+\VAR{mainmatter}
+\texsmithCloseParts
+\end{questions}
+\BLOCK{ else }
+\PackageWarning{texsmith}{No questions found; exam.cls may fail to compile.}
+\VAR{mainmatter}
+\BLOCK{ endif }
+
+\end{document}

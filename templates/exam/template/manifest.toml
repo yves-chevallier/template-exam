@@ -1,0 +1,119 @@
+[compat]
+texsmith = ">=0.6,<1.0"
+
+[latex.template]
+name = "exam"
+version = "0.1.0"
+entrypoint = "template/template.tex"
+engine = "lualatex"
+shell_escape = false
+texlive_year = 2023
+tlmgr_packages = [
+    "babel",
+    "exam",
+    "fontspec",
+    "geometry",
+    "graphicx",
+    "hyperref",
+    "lastpage",
+    "microtype",
+    "parskip",
+    "tcolorbox",
+    "textcomp",
+    "ulem",
+    "xcolor",
+]
+fragments = [
+    "ts-geometry",
+    "ts-typesetting",
+    "ts-fonts",
+    "ts-extra",
+    "ts-code",
+]
+override = ["heading.tex"]
+
+[latex.template.attributes.title]
+default = ""
+type = "string"
+escape = "latex"
+allow_empty = true
+sources = ["title"]
+description = "Exam title (from metadata or promoted heading)."
+
+[latex.template.attributes.author]
+default = ""
+type = "any"
+normaliser = "author_names"
+allow_empty = true
+sources = ["author", "authors"]
+description = "Author or instructor name."
+
+[latex.template.attributes.date]
+default = ""
+type = "string"
+escape = "latex"
+allow_empty = true
+sources = ["date"]
+description = "Exam date (ISO or free-form)."
+
+[latex.template.attributes.type]
+default = "exam"
+type = "string"
+escape = "latex"
+allow_empty = true
+sources = ["exam.type", "type"]
+description = "Exam type (e.g., TE or Exam)."
+
+[latex.template.attributes.department]
+default = ""
+type = "string"
+escape = "latex"
+allow_empty = true
+sources = ["exam.department", "department"]
+description = "Department code."
+
+[latex.template.attributes.school]
+default = ""
+type = "string"
+escape = "latex"
+allow_empty = true
+sources = ["exam.school", "school"]
+description = "School name."
+
+[latex.template.attributes.course]
+default = ""
+type = "string"
+escape = "latex"
+allow_empty = true
+sources = ["exam.course", "course"]
+description = "Course name or code."
+
+[latex.template.attributes.duration]
+default = ""
+type = "string"
+escape = "latex"
+allow_empty = true
+sources = ["exam.duration", "duration"]
+description = "Exam duration in minutes."
+
+[latex.template.attributes.rules]
+default = []
+type = "list"
+normaliser = "markdown_list"
+sources = ["exam.rules", "rules"]
+description = "List of rules to display on the cover page."
+
+[latex.template.attributes.language]
+default = "french"
+type = "string"
+allow_empty = false
+normaliser = "babel_language"
+description = "Babel language for the document."
+
+[latex.template.slots.mainmatter]
+default = true
+depth = "section"
+description = "Main exam content."
+
+[latex.template.assets]
+"heiglogo.sty" = { source = "template/heiglogo.sty" }
