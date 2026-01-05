@@ -1,13 +1,15 @@
 \BLOCK{- set normalized = text|trim -}
 \BLOCK{- set empty_title = normalized in ["", "_", "\\_"] -}
+\BLOCK{- set points_value = points|default('', true)|trim -}
+\BLOCK{- set has_points = points_value != '' -}
 \BLOCK{- if level == 1 -}
-\BLOCK{ if empty_title }\texsmithQuestion{}\BLOCK{ else }\texsmithQuestion{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{ if empty_title }\texsmithQuestion\BLOCK{ if has_points }[\VAR{points_value}]\BLOCK{ endif }{}\BLOCK{ else }\texsmithQuestion\BLOCK{ if has_points }[\VAR{points_value}]\BLOCK{ endif }{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
 \BLOCK{- elif level == 2 -}
-\BLOCK{ if empty_title }\texsmithPart{}\BLOCK{ else }\texsmithPart{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{ if empty_title }\texsmithPart\BLOCK{ if has_points }[\VAR{points_value}]\BLOCK{ endif }{}\BLOCK{ else }\texsmithPart\BLOCK{ if has_points }[\VAR{points_value}]\BLOCK{ endif }{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
 \BLOCK{- elif level == 3 -}
-\BLOCK{ if empty_title }\texsmithSubpart{}\BLOCK{ else }\texsmithSubpart{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{ if empty_title }\texsmithSubpart\BLOCK{ if has_points }[\VAR{points_value}]\BLOCK{ endif }{}\BLOCK{ else }\texsmithSubpart\BLOCK{ if has_points }[\VAR{points_value}]\BLOCK{ endif }{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
 \BLOCK{- elif level == 4 -}
-\BLOCK{ if empty_title }\texsmithSubsubpart{}\BLOCK{ else }\texsmithSubsubpart{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
+\BLOCK{ if empty_title }\texsmithSubsubpart\BLOCK{ if has_points }[\VAR{points_value}]\BLOCK{ endif }{}\BLOCK{ else }\texsmithSubsubpart\BLOCK{ if has_points }[\VAR{points_value}]\BLOCK{ endif }{\VAR{text}}\BLOCK{ endif }\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
 \BLOCK{- else -}
 \textbf{\VAR{text}}\BLOCK{ if ref }\label{\VAR{ref}}\BLOCK{ endif }
 \BLOCK{- endif -}

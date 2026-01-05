@@ -57,31 +57,49 @@
   \fi
 }
 
-\newcommand{\texsmithQuestion}[1]{%
+\newcommand{\texsmithQuestion}[2][]{%
   \texsmithCloseParts
-  \def\texsmithTmp{#1}%
+  \def\texsmithTmp{#2}%
+  \def\texsmithPts{#1}%
   \if\relax\detokenize{\texsmithTmp}\relax
-    \question
+    \if\relax\detokenize{\texsmithPts}\relax
+      \question
+    \else
+      \question[\texsmithPts]%
+    \fi
   \else
-    \titledquestion{#1}%
+    \if\relax\detokenize{\texsmithPts}\relax
+      \titledquestion{#2}%
+    \else
+      \titledquestion{#2}[\texsmithPts]%
+    \fi
   \fi
 }
 
-\newcommand{\texsmithPart}[1]{%
+\newcommand{\texsmithPart}[2][]{%
   \texsmithCloseSubparts
   \iftexsmithPartsOpen\else
     \begin{parts}%
     \texsmithPartsOpentrue
   \fi
-  \def\texsmithTmp{#1}%
+  \def\texsmithTmp{#2}%
+  \def\texsmithPts{#1}%
   \if\relax\detokenize{\texsmithTmp}\relax
-    \part
+    \if\relax\detokenize{\texsmithPts}\relax
+      \part
+    \else
+      \part[\texsmithPts]%
+    \fi
   \else
-    \part #1%
+    \if\relax\detokenize{\texsmithPts}\relax
+      \part #2%
+    \else
+      \part[\texsmithPts] #2%
+    \fi
   \fi
 }
 
-\newcommand{\texsmithSubpart}[1]{%
+\newcommand{\texsmithSubpart}[2][]{%
   \iftexsmithPartsOpen\else
     \begin{parts}%
     \texsmithPartsOpentrue
@@ -90,15 +108,24 @@
     \begin{subparts}%
     \texsmithSubpartsOpentrue
   \fi
-  \def\texsmithTmp{#1}%
+  \def\texsmithTmp{#2}%
+  \def\texsmithPts{#1}%
   \if\relax\detokenize{\texsmithTmp}\relax
-    \subpart
+    \if\relax\detokenize{\texsmithPts}\relax
+      \subpart
+    \else
+      \subpart[\texsmithPts]%
+    \fi
   \else
-    \subpart #1%
+    \if\relax\detokenize{\texsmithPts}\relax
+      \subpart #2%
+    \else
+      \subpart[\texsmithPts] #2%
+    \fi
   \fi
 }
 
-\newcommand{\texsmithSubsubpart}[1]{%
+\newcommand{\texsmithSubsubpart}[2][]{%
   \iftexsmithPartsOpen\else
     \begin{parts}%
     \texsmithPartsOpentrue
@@ -111,11 +138,20 @@
     \begin{subsubparts}%
     \texsmithSubsubpartsOpentrue
   \fi
-  \def\texsmithTmp{#1}%
+  \def\texsmithTmp{#2}%
+  \def\texsmithPts{#1}%
   \if\relax\detokenize{\texsmithTmp}\relax
-    \subsubpart
+    \if\relax\detokenize{\texsmithPts}\relax
+      \subsubpart
+    \else
+      \subsubpart[\texsmithPts]%
+    \fi
   \else
-    \subsubpart #1%
+    \if\relax\detokenize{\texsmithPts}\relax
+      \subsubpart #2%
+    \else
+      \subsubpart[\texsmithPts] #2%
+    \fi
   \fi
 }
 
