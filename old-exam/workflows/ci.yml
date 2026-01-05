@@ -1,0 +1,27 @@
+on:
+  push:
+    branches:
+      - master
+  create:
+    tags:
+jobs:
+  build:
+    name: Build Project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Build docker images
+        run: docker build . -t exam -f .devcontainer/Dockerfile
+      - name: Build exam
+        run: docker run -v $GITHUB_WORKSPACE:/srv -w/srv exam make
+      - name: Move
+        run : mkdir -p build && mv *.pdf build
+      - name: Upload exam
+        uses: actions/upload-artifact@v4
+        with:
+          name: exam
+          path: build
+          if-no-files-found: error

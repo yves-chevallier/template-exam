@@ -1,0 +1,7 @@
+---
+BasedOnStyle: Google
+IndentWidth: '3'
+Language: Cpp
+SpacesBeforeTrailingComments: '2'
+TabWidth: '3'
+...

@@ -1,0 +1,85 @@
+\titledquestion{Fonctions}[15]
+
+Écrire des fonctions C complètes correspondantes aux descriptions. Faire l'hypothèse que toutes les bibliothèques standards ont été importées en amont. L'exemple est donné pour la fonction \CD{hello} qui affiche \CD{Hello World!} sur la sortie standard.
+
+\begin{codeframe}
+\begin{lstlisting}
+void hello() { printf("Hello World!\n"); }
+\end{lstlisting}
+\end{codeframe}
+
+\begin{parts}
+
+\part La fonction \CD{manhattan\_distance} s'applique à des \underline{entiers}. Elle calcule et retourne la distance de Manhattan entre deux points 2D.
+Les coordonnées de chaque point $(x_1, y_1)$ et $(x_2, y_2)$ sont reçues en paramètres. La distance de Manhattan vaut $\lvert x2 - x1\rvert + \lvert y2 - y1\rvert$.
+\begin{solutionordottedlines}[8\dottedlinefillheight]
+\begin{codeframe}
+\begin{lstlisting}
+int manhattan_distance(int x1, int y1, int x2, int y2) {
+    return abs(x2 - x1) + abs(y2 - y1);
+}\end{lstlisting}
+\end{codeframe}
+\end{solutionordottedlines}
+
+\part La fonction \CD{div_mod} reçoit deux entiers \CD{a} et \CD{b} passés par adresse. Si la valeur pointée par \CD{b} est nulle, la fonction retourne \CD{true}. Sinon elle remplace respectivement les valeurs pointées par \CD{a} et \CD{b} par le quotient et le reste de la division de 
+\CD{a} par \CD{b}. La fonction retourne alors \CD{false}.
+
+
+\begin{solutionordottedlines}[10\dottedlinefillheight]
+\begin{codeframe}
+\begin{lstlisting}
+bool div_mod(int *a, int *b) {
+    if (*b == 0) return true;
+    int tmp = *a;
+    *a = *a / *b;
+    *b = tmp % *b;
+    return false;
+}\end{lstlisting}
+\end{codeframe}
+\end{solutionordottedlines}
+
+\newpage
+\part La fonction \CD{bit_set} retourne le nombre de bits à 1 dans la représentation binaire d'un entier non signé \CD{n} strictement codé sur 32 bits reçu en paramètre (type \CD{uint32_t}).
+\begin{solutionordottedlines}[8\dottedlinefillheight]
+\begin{codeframe}
+\begin{lstlisting}
+int bit_set(uint32_t n) {
+    int count = 0;
+    const length = sizeof(n) * CHAR_BIT;
+    for (int i = 0; i < length; i++)
+        count += n & (1 << i);
+    return count;
+}\end{lstlisting}
+\end{codeframe}
+\end{solutionordottedlines}
+
+\part La fonction \CD{max_diff} retourne la différence entre le plus grand et le plus petit élément d'un tableau d'entiers \CD{arr} reçu en paramètre. Le nombre d'éléments \CD{n} du tableau est reçu comme deuxième paramètre ; il est supposé supérieure à 0.
+
+\begin{solutionordottedlines}[10\dottedlinefillheight]
+\begin{codeframe}
+\begin{lstlisting}
+int max_diff(int *arr, int n) {
+    int min = arr[0], max = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] < min) min = arr[i];
+        if (arr[i] > max) max = arr[i];
+    }
+    return max - min;
+}\end{lstlisting}
+\end{codeframe}
+\end{solutionordottedlines}
+
+\part Une fonction \CD{check} reçoit une chaîne de caractères \CD{str} de la forme \CD{"12 -23 -42"} où les \underline{trois} nombres \underline{entiers} peuvent être positifs ou négatifs. La fonction retourne \CD{true} si la chaîne est valide et que les trois nombres sont différents les uns des autres. Sinon, elle retourne \CD{false}. Les éventuels caractères situés après le troisième nombre ne sont pas pris en compte.
+
+\begin{solutionordottedlines}[12\dottedlinefillheight]
+\begin{codeframe}
+\begin{lstlisting}
+bool check(const char *str) {
+    int a, b, c;
+    if (sscanf(str, "%d %d %d", &a, &b, &c) != 3) return false;
+    return a != b && a != c && b != c;
+}\end{lstlisting}
+\end{codeframe}
+\end{solutionordottedlines}
+
+\end{parts}

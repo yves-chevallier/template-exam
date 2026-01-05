@@ -1,0 +1,80 @@
+\begingradingrange{Programme complet}
+\titledquestion{Programme complet}[20]
+
+Le programme \CD{spirale} génère une matrice carrée de taille \CD{WIDTH} et la remplit en spirale en partant du centre. La valeur de départ vaut \CD{1} et s'incrémente au fur et à mesure du parcours dans la spirale. La matrice est ensuite affichée sur la sortie standard. Voici un exemple d'utilisation pour \CD{#define WIDTH 5} ; observez bien la logique de placement des nombres dans la matrice : \par
+
+\begin{codeframe}
+\begin{lstlisting}
+$ ./spirale
+  17   16   15   14   13 
+  18    5    4    3   12 
+  19    6    1    2   11 
+  20    7    8    9   10 
+  21   22   23   24   25 
+\end{lstlisting}
+\end{codeframe}
+
+Le programme se compose de la fonction \CD{main} qui doit appeler les deux fonctions suivantes :
+
+\begin{enumerate}
+\item \CD{void fill(int m[WIDTH][WIDTH])} qui remplit la matrice \CD{m} en spirale en partant du centre,
+\item \CD{void display(int m[WIDTH][WIDTH])} qui affiche la matrice \CD{m} sur la sortie standard.
+\end{enumerate}
+
+Vous pouvez éventuellement vous aider du tableau de direction fourni ci-dessous. Il contient les déplacements relatifs (ligne, colonne) pour se déplacer d'une cellule à l'autre en fonction de la direction voulue :
+
+\begin{codeframe}
+\begin{lstlisting}
+int directions[][2] = {
+    {0, 1},  // EST   (droite)
+    {-1, 0}, // NORD  (haut)
+    {0, -1}, // OUEST (gauche)
+    {1, 0},  // SUD   (bas)
+};
+\end{lstlisting}
+\end{codeframe}
+
+\textbf{Cahier des charges :}\\
+
+\begin{enumerate}
+\item le programme \textbf{doit} être complet (include, main, fonctions, etc.),
+\item \CD{WIDTH} est une macro sans paramètre définie dans le programme,
+\item on suppose que \CD{WIDTH} est impaire,
+\item la fonction d'affichage se comporte comme l'exemple (alignement des valeurs),
+\item la valeur de \CD{WIDTH} maximale est 99, soit un affichage sur 4 chiffres maximum.
+\end{enumerate}
+
+\newpage
+\begin{solutionordottedlines}[\stretch{1}]
+\begin{codeframe}
+\lstinputlisting{assets/spirale.c}
+\end{codeframe}
+
+\vfill
+\begin{center}
+\begin{tabular}{ccl} \toprule
+\multicolumn{3}{c}{Critères d'évaluation} \\ \midrule
+\textbf{Points} & \textbf{Contexte} & \textbf{Critère} \\ \midrule
+2 & \CD{fill} & Utilisation du modulo \\
+2 & \CD{fill} & Utilisation de la variable \CD{WIDTH} \\
+3 & \CD{fill} & Logique du changement de direction \\
+1 & \CD{fill} & Condition de sortie de la boucle \\
+1 & \CD{fill} & Condition de départ \\
+2 & \CD{display} & Format de l'affichage \\
+2 & \CD{display} & Boucle imbriquée \\
+1 & \CD{display} & Condition de sortie \\
+3 & \CD{main} & Appel des deux fonctions et prototype correct \\
+3 & \CD{main} & Constantes et includes \\
+\end{tabular}
+\end{center}
+
+\end{solutionordottedlines}
+
+\ifprintanswers
+\else
+\newpage
+\fillwithdottedlines{\stretch{1}}
+\newpage
+\fillwithdottedlines{\stretch{1}}
+\fi
+\endgradingrange{Programme complet}

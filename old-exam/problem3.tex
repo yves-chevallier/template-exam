@@ -1,0 +1,161 @@
+\newcommand{\crosstab}{\ifprintanswers \strike{c|}{\hspace{2em}} \fi}
+
+\newdimen\colwidth
+\setlength\colwidth{25pt}
+
+\titledquestion{Compréhension}[5]
+
+Pour chaque portion d'un programme ci-dessous, \textbf{indiquez} ce qui s'affiche sur la sortie standard. \textbf{Marquez la fin} de l'affichage avec une \underline{croix} comme précisé dans l'exemple. S'il n'y a pas d'affichage ou une boucle infinie, veuillez en \textbf{indiquer les raisons}.\par
+
+% Correspondances ASCII utiles :
+
+% \begin{tabularx}{\linewidth}{*{8}{>{\Centering}X}}
+%     \toprule
+%     \texttt{'a'} & \texttt{'z'} & \texttt{'A'} & \texttt{'Z'} & \texttt{'0'} & \texttt{'9'} & \texttt{EOF} & \texttt{'\textbackslash{}n'} \\
+%     \midrule
+%     97 & 122 & 65 & 90 & 48 & 57 & 255 & 10 \\
+%     0x61 & 0x7A & 0x41 & 0x5A & 0x30 & 0x39 & 0xFF & 0x0A \\
+%     \bottomrule
+% \end{tabularx}
+
+Exemple :
+
+\begin{codeframe}
+\begin{lstlisting}
+int val = 'a';
+printf("Val=%d", val);\end{lstlisting}
+\end{codeframe}
+\hfill {\tabcolsep=0pt\def\arraystretch{1.3}
+\begin{tabularx}{9\colwidth}{|*9{>{\Centering}X|}}\hline
+    \texttt{V} &
+    \texttt{a} &
+    \texttt{l} &
+    \texttt{=} &
+    \texttt{9} &
+    \texttt{7} &
+    \strike{c|}{\hspace{2em}} &  &
+    \tabularnewline
+    \hline
+\end{tabularx}
+\vskip 1em}
+
+\begin{parts}
+
+\part
+\begin{codeframe}
+\begin{lstlisting}
+float x = 2.18281828459045;
+char a = 'a';
+printf("%1.0f%hhd%%", x, a);
+\end{lstlisting}
+\end{codeframe}
+\hfill \partlabel {\tabcolsep=0pt\def\arraystretch{1.3}
+\begin{tabularx}{8\colwidth}{|*8{>{\Centering}X|}}\hline
+    \fillin[\texttt{2}][0in] &
+    \fillin[\texttt{9}][0in] &
+    \fillin[\texttt{7}][0in] &
+    \fillin[\texttt{\%}][0in] &
+    \crosstab &  &  &
+    \tabularnewline
+    \hline
+\end{tabularx}\vskip 1em}
+
+\part
+\begin{codeframe}
+\begin{lstlisting}
+char *str = "14:23:58";
+int u, v, w;
+printf("%s", sscanf(str, "%d:%d:%d", &u, &v, &w) == 3 ? "OK" : "KO");
+\end{lstlisting}
+\end{codeframe}
+\hfill \partlabel {\tabcolsep=0pt\def\arraystretch{1.3}
+\begin{tabularx}{8\colwidth}{|*8{>{\Centering}X|}}\hline
+    \fillin[\texttt{O}][0in] &
+    \fillin[\texttt{K}][0in] &
+    \crosstab & & & & &
+    \tabularnewline
+    \hline
+\end{tabularx}\vskip 1em}
+
+\part
+\begin{codeframe}
+\begin{lstlisting}
+unsigned int a[] = {4, 8, 42, 23};
+const int s = sizeof(a) / sizeof(a[0]);
+for (int i = 0; i < s - 1; ++i) {
+    if (a[i] <= a[i + 1]) continue;
+    int t = a[i];
+    a[i] = a[i + 1];
+    a[i + 1] = t;
+}
+for (int i = 0; i < s; i++) printf("%u ", a[i]);\end{lstlisting}
+\end{codeframe}
+\hfill \partlabel {\tabcolsep=0pt\def\arraystretch{1.3}
+\begin{tabularx}{14\colwidth}{|*{14}{>{\Centering}X|}}\hline
+    \fillin[\texttt{4}][0in] &
+    \fillin[\texttt{ }][0in] &
+    \fillin[\texttt{8}][0in] &
+    \fillin[\texttt{ }][0in] &
+    \fillin[\texttt{2}][0in] &
+    \fillin[\texttt{3}][0in] &
+    \fillin[\texttt{ }][0in] &
+    \fillin[\texttt{4}][0in] &
+    \fillin[\texttt{2}][0in] &
+    \fillin[\texttt{ }][0in] &
+    \crosstab & & &
+    \tabularnewline
+    \hline
+\end{tabularx}\vskip 1em}
+
+\part
+\begin{codeframe}
+\begin{lstlisting}
+int u = 15421 ^ 15421;
+switch (u) {
+    case 0:
+    case 1:
+        printf("1");
+    case 2:
+        printf("2");
+        break;
+    case 3:
+        printf("3");
+    default:
+        printf("42");
+}
+\end{lstlisting}
+
+    \end{codeframe}
+    \hfill \partlabel {\tabcolsep=0pt\def\arraystretch{1.3}
+    \begin{tabularx}{8\colwidth}{|*8{>{\Centering}X|}}\hline
+        \fillin[\texttt{1}][0in] &
+        \fillin[\texttt{2}][0in] &
+        \crosstab & & & & &
+        \tabularnewline
+        \hline
+    \end{tabularx}\vskip 1em}
+
+\part
+\begin{codeframe}
+\begin{lstlisting}
+float f = 3.1415926535;
+while(f > 3.0f) {
+    printf("%05.2f", f);
+    f -= 1.0f;
+}
+\end{lstlisting}
+
+    \end{codeframe}
+    \hfill \partlabel {\tabcolsep=0pt\def\arraystretch{1.3}
+    \begin{tabularx}{8\colwidth}{|*8{>{\Centering}X|}}\hline
+        \fillin[\texttt{0}][0in] &
+        \fillin[\texttt{3}][0in] &
+        \fillin[\texttt{.}][0in] &
+        \fillin[\texttt{1}][0in] &
+        \fillin[\texttt{4}][0in] &
+        \crosstab & &
+        \tabularnewline
+        \hline
+    \end{tabularx}\vskip 1em}
+
+\end{parts}
