@@ -138,6 +138,8 @@ L'expression est vraie si les variables `x`, `x` et `y` sont strictement dans un
 
 !!! solution { lines=1 }
 
+    Blabla les choses sont bien faites
+
     ```c
     x > y && y > z
     ```
