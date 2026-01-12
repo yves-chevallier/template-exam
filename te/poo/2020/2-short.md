@@ -24,7 +24,7 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-!!! solution { lines=1 }
+!!! solution { lines=2 }
 
     ```plaintext
     834
@@ -45,7 +45,7 @@ int main() {
 }
 ```
 
-!!! solution { lines=1 }
+!!! solution { lines=2 }
 
     ```plaintext
     01
@@ -55,7 +55,7 @@ int main() {
 
 Un réseau d'alerte est composés de participants. Chaque participant dispose d'un remplacant également membre du réseau d'alerte. En cas d'alerte on essaye de contacter chaque participant en partant du premier. En cas d'échec de contact, on passe à son remplacant. À tout moment, un participant peut décider de se retirer temporairement du réseau d'alerte. Quelle structure de donnée de la STL allez-vous préférablement utiliser pour gérer ce réseau d'alerte ?
 
-!!! solution { lines=2 }
+!!! solution { lines=4 }
 
     ```plaintext
     Une liste chaînée (`std::list`) permet d'insérer et de supprimer des participants efficacement. La `forward_list` peut aussi être utilisée si on n'a pas besoin de parcourir la liste en arrière.

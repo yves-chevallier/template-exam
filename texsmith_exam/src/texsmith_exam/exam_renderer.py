@@ -316,13 +316,14 @@ def render_exam_checkboxes(element: Tag, context: RenderContext) -> None:
     if not has_checkbox:
         return
 
-    lines = ["\\begin{checkboxes}"]
+    lines = ["\\begin{columen}[5]", "\\begin{checkboxes}"]
     for checked, text in items:
         if checked:
             lines.append(f"\\CorrectChoice {text}")
         else:
             lines.append(f"\\choice {text}")
     lines.append("\\end{checkboxes}")
+    lines.append("\\end{columen}")
 
     element.replace_with(mark_processed(NavigableString("\n".join(lines) + "\n")))
 
