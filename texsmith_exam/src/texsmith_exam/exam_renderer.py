@@ -11,6 +11,7 @@ from texsmith.adapters.handlers._helpers import coerce_attribute, mark_processed
 from texsmith.adapters.handlers.admonitions import gather_classes
 from texsmith.adapters.handlers.blocks import _prepare_rich_text_content
 from texsmith.adapters.handlers.code import _is_ascii_art, _resolve_code_engine
+from texsmith.adapters.handlers.media import render_images as _render_images
 from texsmith.core.context import RenderContext
 from texsmith.core.rules import RenderPhase, renders
 from texsmith.fonts.scripts import render_moving_text
@@ -115,8 +116,73 @@ _GRID_PATTERN = re.compile(r"\bgrid\s*=\s*([^\s,}]+)\b")
 _ATTRS_BLOCK_PATTERN = re.compile(r"\{(?P<attrs>[^}]*)\}\s*$")
 
 
+def _normalize_style_choice(value: object | None, *, default: str, aliases: dict[str, str]) -> str:
+    if value is None:
+        return default
+    candidate = str(value).strip().lower()
+    if not candidate:
+        return default
+    return aliases.get(candidate, candidate) if candidate in aliases or candidate in aliases.values() else default
+
+
+def _exam_style(context: RenderContext) -> dict[str, object]:
+    overrides = context.runtime.get("template_overrides")
+    if not isinstance(overrides, dict):
+        return {}
+    style = overrides.get("style")
+    return style if isinstance(style, dict) else {}
+
+
+def _in_solution_mode(context: RenderContext) -> bool:
+    overrides = context.runtime.get("template_overrides")
+    if isinstance(overrides, dict):
+        value = overrides.get("solution")
+        if isinstance(value, bool):
+            return value
+    value = context.runtime.get("solution")
+    if isinstance(value, bool):
+        return value
+    return False
+
+
+def _choice_style(context: RenderContext) -> str:
+    style = _exam_style(context)
+    return _normalize_style_choice(
+        style.get("choices"),
+        default="alpha",
+        aliases={"checkboxes": "checkbox", "check": "checkbox"},
+    )
+
+
+def _text_style(context: RenderContext) -> str:
+    style = _exam_style(context)
+    return _normalize_style_choice(
+        style.get("text"),
+        default="dotted",
+        aliases={"dots": "dotted", "dottedlines": "dotted", "line": "lines"},
+    )
+
+
+def _choice_label(index: int) -> str:
+    """Return A, B, ..., Z, AA, AB, ... for 0-based index."""
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    label = ""
+    value = index + 1
+    while value:
+        value, rem = divmod(value - 1, 26)
+        label = alphabet[rem] + label
+    return label
+
+
+def _expand_lines_value(value: str, *, unit_macro: str) -> str:
+    trimmed = value.strip()
+    if trimmed.isdigit():
+        return f"{trimmed}\\{unit_macro}"
+    return trimmed
+
+
 def _solution_env(
-    lines_value: str | None, grid_value: str | None
+    lines_value: str | None, grid_value: str | None, text_style: str
 ) -> tuple[str, str]:
     if lines_value:
         lines_value = lines_value.strip()
@@ -124,18 +190,31 @@ def _solution_env(
         grid_value = grid_value.strip()
     if grid_value and grid_value.isdigit():
         grid_value = f"{grid_value}\\linefillheight"
-    if lines_value and lines_value.isdigit():
-        lines_value = f"{lines_value}\\dottedlinefillheight"
     if grid_value:
         begin_env = f"\\begin{{solutionorgrid}}[{grid_value}]\n"
-        end_env = "\\end{solutionorgrid}\n"
-    elif lines_value:
-        begin_env = f"\\begin{{solutionordottedlines}}[{lines_value}]\n"
-        end_env = "\\end{solutionordottedlines}\n"
-    else:
-        begin_env = "\\begin{solution}\n"
-        end_env = "\\end{solution}\n"
-    return begin_env, end_env
+        end_env = "\\leavevmode\n\\end{solutionorgrid}\n"
+        return begin_env, end_env
+    if not lines_value:
+        return "\\begin{solution}\n", "\\leavevmode\n\\end{solution}\n"
+
+    if text_style == "lines":
+        height = _expand_lines_value(lines_value, unit_macro="linefillheight")
+        return (
+            f"\\begin{{solutionorlines}}[{height}]\n",
+            "\\leavevmode\n\\end{solutionorlines}\n",
+        )
+    if text_style == "box":
+        height = _expand_lines_value(lines_value, unit_macro="linefillheight")
+        return (
+            f"\\begin{{solutionorbox}}[{height}]\n",
+            "\\leavevmode\n\\end{solutionorbox}\n",
+        )
+
+    height = _expand_lines_value(lines_value, unit_macro="dottedlinefillheight")
+    return (
+        f"\\begin{{solutionordottedlines}}[{height}]\n",
+        "\\leavevmode\n\\end{solutionordottedlines}\n",
+    )
 
 
 def _split_fenced_segments(code_text: str) -> list[tuple[str, str | None, str]]:
@@ -330,16 +409,68 @@ def render_exam_checkboxes(element: Tag, context: RenderContext) -> None:
     if not has_checkbox:
         return
 
-    lines = ["\\begin{columen}[5]", "\\begin{checkboxes}"]
-    for checked, text in items:
+    choice_style = _choice_style(context)
+    if choice_style == "checkbox":
+        lines = ["\\begin{columen}[5]", "\\begin{checkboxes}"]
+    else:
+        lines = ["\\begin{choices}"]
+    correct_labels: list[str] = []
+    for index, (checked, text) in enumerate(items):
         if checked:
             lines.append(f"\\CorrectChoice {text}")
+            correct_labels.append(_choice_label(index))
         else:
             lines.append(f"\\choice {text}")
-    lines.append("\\end{checkboxes}")
-    lines.append("\\end{columen}")
+    if choice_style == "checkbox":
+        lines.append("\\end{checkboxes}")
+        lines.append("\\end{columen}")
+    else:
+        lines.append("\\end{choices}")
+        if _in_solution_mode(context) and correct_labels:
+            lines.append(f"\\answerline[{', '.join(correct_labels)}]")
+        else:
+            lines.append("\\answerline")
 
     element.replace_with(mark_processed(NavigableString("\n".join(lines) + "\n")))
+
+
+@renders(
+    "img",
+    phase=RenderPhase.POST,
+    priority=120,
+    name="exam_images",
+    nestable=False,
+)
+def render_exam_images(element: Tag, context: RenderContext) -> None:
+    """Ensure images inside solution/admonition blocks render in LaTeX."""
+    _render_images(element, context)
+
+
+@renders(
+    "p",
+    phase=RenderPhase.POST,
+    priority=80,
+    name="exam_image_paragraphs",
+    nestable=True,
+    auto_mark=False,
+)
+def render_exam_image_paragraphs(element: Tag, context: RenderContext) -> None:
+    """Unwrap paragraphs that only contain images so they render correctly."""
+    if element.get("class"):
+        return
+    content_nodes = [
+        node
+        for node in element.contents
+        if not (isinstance(node, NavigableString) and not node.strip())
+    ]
+    if not content_nodes:
+        return
+    if not all(isinstance(node, Tag) and node.name == "img" for node in content_nodes):
+        return
+    for img in list(element.find_all("img", recursive=False)):
+        _render_images(img, context)
+    element.unwrap()
+    context.mark_processed(element, phase=RenderPhase.POST)
 
 
 @renders(
@@ -370,7 +501,7 @@ def render_solution_admonition(element: Tag, context: RenderContext) -> None:
         if grid_match:
             grid_value = grid_match.group(1)
 
-    begin_env, end_env = _solution_env(lines_value, grid_value)
+    begin_env, end_env = _solution_env(lines_value, grid_value, _text_style(context))
 
     content_nodes: list[object] = []
     cursor = element.next_sibling
@@ -447,10 +578,26 @@ def render_solution_callouts(element: Tag, context: RenderContext) -> None:
         if grid_match:
             grid_value = grid_match.group(1)
 
-    begin_env, end_env = _solution_env(lines_value, grid_value)
-    content = element.get_text(strip=False).strip()
-    payload = f"{begin_env}{content}\n{end_env}"
-    element.replace_with(mark_processed(NavigableString(payload)))
+    for img in list(element.find_all("img")):
+        _render_images(img, context)
+
+    begin_env, end_env = _solution_env(lines_value, grid_value, _text_style(context))
+    body = element.find("div", class_="texsmith-solution")
+    title_node = element.find("p", class_="admonition-title")
+    if title_node is not None:
+        title_node.decompose()
+    content_nodes = list(body.contents) if body is not None else list(element.contents)
+    begin_node = mark_processed(NavigableString(begin_env))
+    end_node = mark_processed(NavigableString(end_env))
+    if content_nodes:
+        content_nodes[0].insert_before(begin_node)
+        content_nodes[-1].insert_after(end_node)
+        if body is not None:
+            body.unwrap()
+        element.unwrap()
+    else:
+        element.replace_with(begin_node)
+        begin_node.insert_after(end_node)
 
 
 @renders(
@@ -567,6 +714,8 @@ def register(renderer: object) -> None:
         register_fn(strip_fenced_code_in_blocks)
         register_fn(strip_fenced_code_in_pre)
         register_fn(render_exam_checkboxes)
+        register_fn(render_exam_image_paragraphs)
+        register_fn(render_exam_images)
         register_fn(render_solution_admonition)
         register_fn(render_solution_callouts)
         register_fn(render_exam_headings)

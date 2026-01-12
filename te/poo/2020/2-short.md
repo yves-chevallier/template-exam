@@ -121,7 +121,7 @@ Dans un diagramme de classe UML, pouvez-vous visuellement montrer trois types de
 
     Notons les relations : composition, aggrégation et héritage sur la figure suivante.
 
-    ![Relations UML](uml.pdf){ width=50% }
+    ![Relations UML](uml-arrows.drawio){ width=50% }
 
     - **A** est composé d'éléments **B**. Lorsque **A** est détruit, les éléments **B** le sont aussi.
     - **A** est associé aux éléments **D**. Lorsque **A** est détruit, les éléments **D** subsistent.

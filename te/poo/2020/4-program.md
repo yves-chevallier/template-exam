@@ -2,7 +2,7 @@
 \clearpage
 ///
 
-# Programmation { points=20 }
+# Programmation
 
 L'objectif est de simuler un dispositif de sécurité pour un parking composés de capteurs et d'organes de lecture de ces capteurs. Le patron de conception observateur sera utilisé.
 
@@ -66,13 +66,13 @@ Créer quelques capteurs et quelques systèmes de monitoring en montrant la mani
 
 !!! solution
 
-    Contenu du fichier \lstinline{main.hpp} :
+    Voici un exemple de programme principal `main.cpp` :
 
     ```cpp
     --8<--- "main.cpp"
     ```
 
-    La compilation du projet pourrait être :
+    La compilation du projet pourrait se faire avec :
 
     ```bash
     $ g++ -std=c++11 -Wall simulator.cpp -osimulator.o

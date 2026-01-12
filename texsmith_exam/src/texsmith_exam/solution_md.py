@@ -13,6 +13,7 @@ _SOLUTION_PATTERN = re.compile(
     r"^\s*!!!\s+solution(?:\s*\{(?P<attrs>[^}]*)\})?\s*$", re.IGNORECASE
 )
 _LINES_PATTERN = re.compile(r"\blines\s*=\s*(\d+)\b")
+_GRID_PATTERN = re.compile(r"\bgrid\s*=\s*([^\s,}]+)\b")
 
 
 class _SolutionBlockPreprocessor(Preprocessor):
@@ -33,10 +34,14 @@ class _SolutionBlockPreprocessor(Preprocessor):
 
             attrs = match.group("attrs") or ""
             lines_value = None
+            grid_value = None
             if attrs:
                 lines_match = _LINES_PATTERN.search(attrs)
                 if lines_match:
                     lines_value = lines_match.group(1)
+                grid_match = _GRID_PATTERN.search(attrs)
+                if grid_match:
+                    grid_value = grid_match.group(1)
 
             content: list[str] = []
             index += 1
@@ -65,30 +70,17 @@ class _SolutionBlockPreprocessor(Preprocessor):
                 output.append(line)
                 continue
 
+            attrs_block = ' markdown="1"'
             if lines_value:
-                begin_env = (
-                    "<p class=\"latex-raw\" style=\"display:none;\">"
-                    f"\\begin{{solutionordottedlines}}[{lines_value}"
-                    "\\dottedlinefillheight]</p>"
-                )
-            else:
-                begin_env = (
-                    "<p class=\"latex-raw\" style=\"display:none;\">"
-                    "\\begin{solution}</p>"
-                )
-
-            end_env = (
-                "<p class=\"latex-raw\" style=\"display:none;\">"
-                f"\\end{{solutionordottedlines}}</p>"
-                if lines_value
-                else "<p class=\"latex-raw\" style=\"display:none;\">\\end{solution}</p>"
-            )
-
-            output.append(begin_env)
-            output.append('<div class="texsmith-solution" markdown="1">')
+                attrs_block = f'{attrs_block} lines="{lines_value}"'
+            if grid_value:
+                attrs_block = f'{attrs_block} grid="{grid_value}"'
+            output.append(f'<div class="admonition solution"{attrs_block}>')
+            output.append('<p class="admonition-title">Solution</p>')
+            output.append("")
             output.extend(content)
+            output.append("")
             output.append("</div>")
-            output.append(end_env)
 
         return output
 

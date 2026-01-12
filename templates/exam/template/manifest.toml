@@ -90,7 +90,7 @@ description = "Course name or code."
 
 [latex.template.attributes.duration]
 default = ""
-type = "string"
+type = "any"
 escape = "latex"
 allow_empty = true
 sources = ["exam.duration", "duration"]

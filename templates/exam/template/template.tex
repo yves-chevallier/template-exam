@@ -4,6 +4,7 @@
 \BLOCK{ set author_value = author|default('')|trim }
 \BLOCK{ set date_value = date|default('')|trim }
 \documentclass[a4paper,twoside,addpoints]{exam}
+\pointsinrightmargin
 \BLOCK{ if solution }
 \printanswers
 \BLOCK{ endif }
@@ -12,6 +13,7 @@
 \VAR{extra_packages}
 \usepackage[defaults=exam]{columen}
 \usepackage{graphicx}
+\usepackage{caption}
 \usepackage[\VAR{language|default('french')}]{babel}
 \usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue, citecolor=NavyBlue]{hyperref}
 \usepackage[normalem]{ulem}
@@ -43,9 +45,53 @@
   \PassOptionsToPackage{most,skins,breakable}{tcolorbox}%
   \usepackage{tcolorbox}%
 }
+\renewenvironment{solutionorgrid}[1][0pt]%
+  {%
+    \@insolutiontrue
+    \@addpointsfalse
+    \@ifundefined{ifsolutionsreseteqcounter}{}{%
+      \ifsolutionsreseteqcounter
+        \setcounter{exam@saved@eqnum}{\value{equation}}%
+        \setcounter{equation}{0}%
+      \fi
+    }%
+    \ifprintanswers
+      \begingroup
+      \Solution@Emphasis
+      \begin{TheSolution}%
+    \else
+      \ifcancelspace
+        % Do nothing
+      \else
+        \par
+        \penalty 0
+        \vspace{1em}%
+        \fillwithgrid{#1}%
+        \vspace{1em}%
+      \fi
+      \setbox\z@\vbox\bgroup
+    \fi
+  }{%
+    \ifprintanswers
+      \end{TheSolution}%
+      \endgroup
+    \else
+      \egroup
+    \fi
+    \@ifundefined{ifsolutionsreseteqcounter}{}{%
+      \ifsolutionsreseteqcounter
+        \setcounter{equation}{\value{exam@saved@eqnum}}%
+      \fi
+    }%
+  }%
 \makeatother
 
-\qformat{\textbf{Probl\`eme \thequestion : \thequestiontitle}\hfill(\thepoints)}
+% Grid styling for solution boxes
+\colorgrids
+\definecolor{GridColor}{gray}{0.7}
+\setlength{\gridsize}{5mm}
+
+\qformat{\vbox{\hbox to \hsize{\textbf{Probl\`eme \thequestion : \thequestiontitle}\hfill(\thepoints)}\vspace{0.8em}}}
 
 \newtcolorbox{examrules}[1][]{%
   enhanced jigsaw,
