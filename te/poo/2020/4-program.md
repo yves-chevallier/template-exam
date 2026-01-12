@@ -42,17 +42,10 @@ Déclarer la description des classes `Sensor` et `Monitor` sans les implémenter
 
 Implémentez les méthodes suivantes :
 
-**connect**
-: un système de monitoring se connecte à un capteur,
-
-**read**
-: méthode de `Sensor` qui déclanche la notification aux clients si le taux de CO2 dépasse la valeur limite,
-
-**notify**
-: méthode appelée par `read` notifie tous les systèmes de monitoring en appelant leur méthode `alert`,
-
-**alert**
-: methode du système de monitoring qui affiche le message sur la sortie standard.
+- **connect**: un système de monitoring se connecte à un capteur,
+- **read**: méthode de `Sensor` qui déclanche la notification aux clients si le taux de CO2 dépasse la valeur limite,
+- **notify**: méthode appelée par `read` notifie tous les systèmes de monitoring en appelant leur méthode `alert`,
+- **alert**: methode du système de monitoring qui affiche le message sur la sortie standard.
 
 !!! solution
 

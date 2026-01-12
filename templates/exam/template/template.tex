@@ -14,6 +14,7 @@
 \usepackage[defaults=exam]{columen}
 \usepackage{graphicx}
 \usepackage{caption}
+\usepackage{ifthen}
 \usepackage[\VAR{language|default('french')}]{babel}
 \usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue, citecolor=NavyBlue]{hyperref}
 \usepackage[normalem]{ulem}
@@ -168,10 +169,10 @@
   \vskip 1.5em%
 }
 
-\firstpageheader{\school~/~\ifprintanswers \textcolor{red}{Solution} \fi \documentType~\course}{}{\enspace\makebox[6cm]{}\bfseries Nom/Pr\\'enom :\enspace\makebox[6cm]{\hrulefill}}
-\runningheader{\school~/~\ifprintanswers \textcolor{red}{Solution} \fi \documentType~\course}{}{\enspace\makebox[6cm]{}\bfseries Nom/Pr\\'enom :\enspace\makebox[6cm]{\hrulefill}}
-\footer{\rightmark}{Page \thepage\ sur \pageref{LastPage}}{\course}
-\pagestyle{foot}
+\firstpageheader{\school~/~\ifprintanswers \textcolor{red}{Solution} \fi \VAR{title_value}}{}{Probl\`eme \thequestion}
+\runningheader{\school~/~\ifprintanswers \textcolor{red}{Solution} \fi \VAR{title_value}}{}{Probl\`eme \thequestion}
+\footer{\ifthenelse{\value{page}=\pageref{LastPage}}{fin de l'examen}{Allez \`a la page suivante...}}{Page \thepage\ sur \pageref{LastPage}}{\course}
+\pagestyle{headandfoot}
 \makeatother
 
 \begin{document}

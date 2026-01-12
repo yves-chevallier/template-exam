@@ -413,7 +413,7 @@ def render_exam_checkboxes(element: Tag, context: RenderContext) -> None:
     if choice_style == "checkbox":
         lines = ["\\begin{columen}[5]", "\\begin{checkboxes}"]
     else:
-        lines = ["\\begin{choices}"]
+        lines = ["\\begin{columen}[5]", "\\begin{choices}"]
     correct_labels: list[str] = []
     for index, (checked, text) in enumerate(items):
         if checked:
@@ -426,6 +426,7 @@ def render_exam_checkboxes(element: Tag, context: RenderContext) -> None:
         lines.append("\\end{columen}")
     else:
         lines.append("\\end{choices}")
+        lines.append("\\end{columen}")
         if _in_solution_mode(context) and correct_labels:
             lines.append(f"\\answerline[{', '.join(correct_labels)}]")
         else:
