@@ -13,6 +13,7 @@
 *.stdout
 *.txt
 *.xdv
+*:Zone.Identifier
 config.tex
 exam.sh
 solution.sh
