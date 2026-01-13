@@ -16,6 +16,7 @@ tlmgr_packages = [
     "graphicx",
     "hyperref",
     "lastpage",
+    "multicol",
     "microtype",
     "parskip",
     "tcolorbox",

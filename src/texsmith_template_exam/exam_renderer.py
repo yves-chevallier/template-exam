@@ -12,6 +12,7 @@ from texsmith.adapters.handlers.admonitions import gather_classes
 from texsmith.adapters.handlers.blocks import _prepare_rich_text_content
 from texsmith.adapters.handlers.code import _is_ascii_art, _resolve_code_engine
 from texsmith.adapters.handlers.media import render_images as _render_images
+from texsmith.core.callouts import DEFAULT_CALLOUTS, merge_callouts, normalise_callouts
 from texsmith.core.context import RenderContext
 from texsmith.core.rules import RenderPhase, renders
 from texsmith.fonts.scripts import render_moving_text
@@ -23,6 +24,34 @@ def _flag(context: RenderContext, key: str) -> bool:
 
 def _set_flag(context: RenderContext, key: str, value: bool) -> None:
     context.state.counters[key] = 1 if value else 0
+
+
+def _ensure_solution_callout(context: RenderContext) -> None:
+    callouts = context.runtime.get("callouts_definitions")
+    if isinstance(callouts, dict):
+        merged = dict(callouts)
+    else:
+        merged = merge_callouts(DEFAULT_CALLOUTS)
+    if "solution" not in merged:
+        merged["solution"] = {
+            "background_color": "F5F5F5",
+            "border_color": "9E9E9E",
+            "icon": "✅",
+        }
+    context.runtime["callouts_definitions"] = normalise_callouts(merged)
+
+
+@renders(
+    "[document]",
+    "body",
+    "html",
+    phase=RenderPhase.PRE,
+    priority=5,
+    name="exam_callout_defaults",
+)
+def set_exam_callouts(root: Tag, context: RenderContext) -> None:
+    """Ensure the solution callout is registered before callouts render."""
+    _ensure_solution_callout(context)
 
 
 def _close_subsubparts(context: RenderContext, lines: list[str]) -> None:

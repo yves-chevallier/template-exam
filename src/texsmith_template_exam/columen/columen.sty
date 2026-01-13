@@ -1,0 +1,9 @@
+\ProvidesPackage{columen}[2025/03/12 Minimal column wrapper]
+\RequirePackage{multicol}
+
+% Simple wrapper for multi-column layouts used by the exam template.
+\newenvironment{columen}[1][1]{%
+  \begin{multicols}{#1}%
+}{%
+  \end{multicols}%
+}
