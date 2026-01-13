@@ -3,6 +3,36 @@
 \BLOCK{ set title_value = title|default('')|trim }
 \BLOCK{ set author_value = author|default('')|trim }
 \BLOCK{ set date_value = date|default('')|trim }
+\BLOCK{ set lang = language|default('english')|lower }
+\BLOCK{ if lang in ['french', 'fr', 'francais'] }
+  \BLOCK{ set label_problem = "Probl\\`eme" }
+  \BLOCK{ set label_rules = "Consignes" }
+  \BLOCK{ set label_next_page = "Allez \\`a la page suivante..." }
+  \BLOCK{ set label_page_of = "Page \\thepage\\ sur \\pageref{LastPage}" }
+  \BLOCK{ set label_end_exam = "Fin de l'examen" }
+  \BLOCK{ set label_name = "Nom, Pr\\'enom" }
+\BLOCK{ elif lang in ['italian', 'it', 'italiano'] }
+  \BLOCK{ set label_problem = "Problema" }
+  \BLOCK{ set label_rules = "Istruzioni" }
+  \BLOCK{ set label_next_page = "Vai alla pagina successiva..." }
+  \BLOCK{ set label_page_of = "Pagina \\thepage\\ di \\pageref{LastPage}" }
+  \BLOCK{ set label_end_exam = "Fine dell'esame" }
+  \BLOCK{ set label_name = "Cognome, Nome" }
+\BLOCK{ elif lang in ['german', 'de', 'deutsch'] }
+  \BLOCK{ set label_problem = "Aufgabe" }
+  \BLOCK{ set label_rules = "Hinweise" }
+  \BLOCK{ set label_next_page = "Bitte zur n\\\"achsten Seite..." }
+  \BLOCK{ set label_page_of = "Seite \\thepage\\ von \\pageref{LastPage}" }
+  \BLOCK{ set label_end_exam = "Ende der Pr\\\"ufung" }
+  \BLOCK{ set label_name = "Nachname, Vorname" }
+\BLOCK{ else }
+  \BLOCK{ set label_problem = "Problem" }
+  \BLOCK{ set label_rules = "Instructions" }
+  \BLOCK{ set label_next_page = "Go to the next page..." }
+  \BLOCK{ set label_page_of = "Page \\thepage\\ of \\pageref{LastPage}" }
+  \BLOCK{ set label_end_exam = "End of the exam" }
+  \BLOCK{ set label_name = "Surname, First name" }
+\BLOCK{ endif }
 \documentclass[a4paper,twoside,addpoints]{exam}
 \pointsinrightmargin
 \BLOCK{ if solution }
@@ -16,8 +46,9 @@
 \usepackage{graphicx}
 \usepackage{caption}
 \usepackage{ifthen}
-\usepackage[\VAR{language|default('french')}]{babel}
-\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=NavyBlue, citecolor=NavyBlue]{hyperref}
+\usepackage{eso-pic}
+\usepackage[\VAR{language|default('english')}]{babel}
+\usepackage[colorlinks=false, hidelinks]{hyperref}
 \usepackage[normalem]{ulem}
 \usepackage{lastpage}
 \usepackage{parskip}
@@ -94,7 +125,7 @@
 \definecolor{GridColor}{gray}{0.7}
 \setlength{\gridsize}{5mm}
 
-\qformat{\vbox{\hbox to \hsize{\textbf{Probl\`eme \thequestion : \thequestiontitle}\hfill(\thepoints)}\vspace{0.8em}}}
+\qformat{\vbox{\hbox to \hsize{\textbf{\VAR{label_problem} \thequestion : \thequestiontitle}\hfill(\thepoints)}\vspace{0.8em}}}
 \renewcommand{\questionshook}{%
   % Only reduce spacing after question labels, keep parts/subparts defaults.
   \setlength{\labelsep}{0.4em}%
@@ -142,9 +173,49 @@
 \BLOCK{ set document_type_label = exam_type_raw|default("Exam") }
 \BLOCK{ endif }
 \BLOCK{ set display_title = title_value if title_value else (document_type_label ~ " " ~ course) }
+\BLOCK{ set author_payload = author|default('') }
+\BLOCK{ set author_ns = namespace(lines=[]) }
+\BLOCK{ if author_payload is string }
+  \BLOCK{ set author_text = author_payload|trim }
+  \BLOCK{ if author_text }
+    \BLOCK{ set author_ns.lines = [author_text|latex_escape] }
+  \BLOCK{ endif }
+\BLOCK{ elif author_payload is mapping }
+  \BLOCK{ set author_name = author_payload.get('name')|default('')|trim }
+  \BLOCK{ set author_aff = author_payload.get('affiliation')|default('')|trim }
+  \BLOCK{ if author_name }
+    \BLOCK{ set author_ns.lines = [author_name|latex_escape] }
+    \BLOCK{ if author_aff }
+      \BLOCK{ set author_ns.lines = author_ns.lines + [author_aff|latex_escape] }
+    \BLOCK{ endif }
+  \BLOCK{ endif }
+\BLOCK{ elif author_payload is sequence }
+  \BLOCK{ for entry in author_payload }
+    \BLOCK{ if entry is string }
+      \BLOCK{ set entry_name = entry|trim }
+      \BLOCK{ set entry_aff = '' }
+    \BLOCK{ elif entry is mapping }
+      \BLOCK{ set entry_name = entry.get('name')|default('')|trim }
+      \BLOCK{ set entry_aff = entry.get('affiliation')|default('')|trim }
+    \BLOCK{ else }
+      \BLOCK{ set entry_name = '' }
+      \BLOCK{ set entry_aff = '' }
+    \BLOCK{ endif }
+    \BLOCK{ if entry_name }
+      \BLOCK{ set author_ns.lines = author_ns.lines + [entry_name|latex_escape] }
+      \BLOCK{ if entry_aff }
+        \BLOCK{ set author_ns.lines = author_ns.lines + [entry_aff|latex_escape] }
+      \BLOCK{ endif }
+      \BLOCK{ if not loop.last }
+        \BLOCK{ set author_ns.lines = author_ns.lines + [''] }
+      \BLOCK{ endif }
+    \BLOCK{ endif }
+  \BLOCK{ endfor }
+\BLOCK{ endif }
+\BLOCK{ set author_rendered = author_ns.lines|join('\\\\') }
 
 \title{\VAR{display_title}}
-\author{\VAR{author}}
+\author{\VAR{author_rendered}}
 
 \def\thedate{\VAR{date_value if date_value else "\\today"}}
 \def\department{\VAR{department}}
@@ -158,6 +229,18 @@
 \def\@maketitle{%
   \newpage
   \heiglogo[color=black]
+  \AddToShipoutPictureFG*{%
+    \AtPageUpperLeft{%
+      \put(1cm,-2.5cm){%
+        \begin{minipage}[t]{\dimexpr\paperwidth-2cm\relax}
+          \hfill
+          \begin{minipage}[t]{5.5cm}\raggedleft\bfseries \VAR{label_name}~:\end{minipage}%
+          \hspace{0.5em}%
+          \begin{minipage}[t]{8cm}\fbox{\makebox[\linewidth][l]{\rule{0pt}{0.8cm}}}\end{minipage}%
+        \end{minipage}%
+      }%
+    }%
+  }
   \null
   \vskip 8em%
   \begin{center}%
@@ -187,9 +270,9 @@
   \vskip 1.5em%
 }
 
-\firstpageheader{\school~/~\ifprintanswers \textcolor{red}{Solution} \fi \VAR{title_value}}{}{Probl\`eme \thequestion}
-\runningheader{\school~/~\ifprintanswers \textcolor{red}{Solution} \fi \VAR{title_value}}{}{Probl\`eme \thequestion}
-\footer{\ifthenelse{\value{page}=\pageref{LastPage}}{fin de l'examen}{Allez \`a la page suivante...}}{Page \thepage\ sur \pageref{LastPage}}{\course}
+\firstpageheader{\school~/~\ifprintanswers \textcolor{red}{Solution} \fi \VAR{title_value}}{}{\VAR{label_problem} \thequestion}
+\runningheader{\school~/~\ifprintanswers \textcolor{red}{Solution} \fi \VAR{title_value}}{}{\VAR{label_problem} \thequestion}
+\footer{\ifthenelse{\value{page}=\pageref{LastPage}}{\VAR{label_end_exam}}{\VAR{label_next_page}}}{\VAR{label_page_of}}{\course}
 \pagestyle{headandfoot}
 \makeatother
 
@@ -211,11 +294,11 @@
   \BLOCK{ if rules }
   \begin{center}
     \begin{examrules}
-      \textbf{Consignes : }
+      \textbf{\VAR{label_rules} : }
       \vskip 1em%
       \begin{itemize}
       \BLOCK{ for rule in rules }
-        \item \VAR{rule}
+        \item \VAR{rule|markdown_to_latex}
       \BLOCK{ endfor }
       \end{itemize}
     \end{examrules}

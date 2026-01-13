@@ -110,7 +110,7 @@ sources = ["exam.solution", "solution"]
 description = "Enable answers/solutions mode (printanswers)."
 
 [latex.template.attributes.language]
-default = "french"
+default = "english"
 type = "string"
 allow_empty = false
 normaliser = "babel_language"

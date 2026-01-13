@@ -1,7 +1,9 @@
-- Suppress colors in links 
-- Les consignes ne sont pas miss en forme (gras de nom et prénom)
-- Ajouter espace sur première page pour nom/prénom prendre exemple sur...
-- Résoudre problème callout solution 
+- [x] Suppress colors in links
+- [x] Les consignes ne sont pas miss en forme (gras de nom et prénom)
+- [x] Gestion de la langue
+- [x] Author
+- [ ] Ajouter espace sur première page pour nom/prénom prendre exemple sur...
+  [ ] Résoudre problème callout solution
 - Fin du travail écrit "Fin" avec une capitale
 - Support pour les fill-in-the-blank
 - Support for multiple answers
@@ -28,7 +30,7 @@ We can leverage the fill in the blank syntax to ask several inputs. For example,
 
 Draw a sheep in the box. Box parameter will draw a box or the solution. You can configure the box size either by giving the height: `box=5cm` or both width and height `box=50x40` this time in mm.
 
-!!! solution { box=50x50 } 
+!!! solution { box=50x50 }
 
     ![sheep]{sheep.drawio}
 
