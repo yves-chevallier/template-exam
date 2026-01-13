@@ -7,6 +7,14 @@ dependencies = [
     "texsmith>=0.2.1,<1.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "texsmith-exam",
+]
+
+[tool.uv.sources]
+texsmith-exam = { path = "texsmith_exam", editable = true }
+
 [project.entry-points."texsmith.templates"]
 exam = "texsmith_template_exam:template"
 

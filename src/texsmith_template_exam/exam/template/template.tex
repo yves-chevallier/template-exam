@@ -137,7 +137,7 @@
 
 \BLOCK{ set document_type = exam_type_raw|lower }
 \BLOCK{ if document_type in ["te", "travail ecrit", "travail écrit"] }
-\BLOCK{ set document_type_label = "Travail \\\\'Ecrit" }
+\BLOCK{ set document_type_label = "Travail \\'Ecrit" }
 \BLOCK{ else }
 \BLOCK{ set document_type_label = exam_type_raw|default("Exam") }
 \BLOCK{ endif }
@@ -146,7 +146,7 @@
 \title{\VAR{display_title}}
 \author{\VAR{author}}
 
-\def\thedate{\VAR{date_value if date_value else "\\\\today"}}
+\def\thedate{\VAR{date_value if date_value else "\\today"}}
 \def\department{\VAR{department}}
 \def\school{\VAR{school}}
 \def\subtitle{\VAR{subtitle}}

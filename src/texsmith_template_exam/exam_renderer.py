@@ -14,8 +14,11 @@ from texsmith.adapters.handlers.code import _is_ascii_art, _resolve_code_engine
 from texsmith.adapters.handlers.media import render_images as _render_images
 from texsmith.core.callouts import DEFAULT_CALLOUTS, merge_callouts, normalise_callouts
 from texsmith.core.context import RenderContext
-from texsmith.core.rules import RenderPhase, renders
+from texsmith.core.rules import DOCUMENT_NODE, RenderPhase, renders
 from texsmith.fonts.scripts import render_moving_text
+
+_FILLIN_PATTERN = re.compile(r"\[([^\]\n]+)\]\{([^}\n]+)\}")
+_FILLIN_WIDTH_PATTERN = re.compile(r"\b(?:w|width)\s*=\s*([^\s,}]+)")
 
 
 def _flag(context: RenderContext, key: str) -> bool:
@@ -192,6 +195,22 @@ def _text_style(context: RenderContext) -> str:
     )
 
 
+def _normalize_fillin_width(value: str) -> str:
+    normalized = value.strip()
+    if not normalized:
+        return normalized
+    if re.fullmatch(r"\d+(?:\.\d+)?", normalized):
+        return f"{normalized}mm"
+    return normalized
+
+
+def _extract_fillin_width(attrs: str) -> str:
+    match = _FILLIN_WIDTH_PATTERN.search(attrs)
+    if not match:
+        return ""
+    return match.group(1)
+
+
 def _choice_label(index: int) -> str:
     """Return A, B, ..., Z, AA, AB, ... for 0-based index."""
     alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -358,6 +377,70 @@ def _render_fenced_segments(
 
 
 @renders(
+    DOCUMENT_NODE,
+    phase=RenderPhase.PRE,
+    priority=-5,
+    name="exam_fillin_placeholders",
+    before=("escape_plain_text",),
+)
+def render_fillin_placeholders(root: Tag, context: RenderContext) -> None:
+    """Replace [answer]{w=50} placeholders with exam.cls fill-ins."""
+    legacy_accents = getattr(context.config, "legacy_latex_accents", False)
+    for node in list(root.find_all(string=True)):
+        if getattr(node, "processed", False):
+            continue
+        text = str(node)
+        if not text or _FILLIN_PATTERN.search(text) is None:
+            continue
+
+        parent = node.parent
+        skip = False
+        while parent is not None:
+            if getattr(parent, "name", None) in {"code", "pre", "script"}:
+                skip = True
+                break
+            classes = gather_classes(getattr(parent, "get", lambda *_: None)("class"))
+            if "latex-raw" in classes or parent.get("data-texsmith-latex") == "true":
+                skip = True
+                break
+            parent = getattr(parent, "parent", None)
+        if skip:
+            continue
+
+        segments: list[NavigableString] = []
+        cursor = 0
+        for match in _FILLIN_PATTERN.finditer(text):
+            if match.start() > cursor:
+                segments.append(NavigableString(text[cursor: match.start()]))
+            answer_raw = match.group(1)
+            attrs = match.group(2)
+            answer = render_moving_text(
+                answer_raw,
+                context,
+                legacy_accents=legacy_accents,
+                escape="\\" not in answer_raw,
+            )
+            width_value = _normalize_fillin_width(_extract_fillin_width(attrs))
+            if width_value:
+                latex = f"\\fillin[{answer}][{width_value}]"
+            else:
+                latex = f"\\fillin[{answer}]"
+            segments.append(mark_processed(NavigableString(latex)))
+            cursor = match.end()
+        if cursor < len(text):
+            segments.append(NavigableString(text[cursor:]))
+
+        if not segments:
+            continue
+        first = segments[0]
+        node.replace_with(first)
+        cursor_node = first
+        for segment in segments[1:]:
+            cursor_node.insert_after(segment)
+            cursor_node = segment
+
+
+@renders(
     "pre",
     phase=RenderPhase.PRE,
     priority=10,
@@ -482,6 +565,35 @@ def render_exam_checkboxes(element: Tag, context: RenderContext) -> None:
 
 
 @renders(
+    "span",
+    phase=RenderPhase.POST,
+    priority=60,
+    name="exam_fillin",
+    nestable=True,
+    auto_mark=False,
+)
+def render_exam_fillin(element: Tag, context: RenderContext) -> None:
+    """Render inline fill-in blanks from Markdown placeholders."""
+    classes = gather_classes(element.get("class"))
+    if "texsmith-fillin" not in classes:
+        return
+
+    raw_text = element.get_text(strip=False)
+    answer = render_moving_text(
+        raw_text,
+        context,
+        legacy_accents=getattr(context.config, "legacy_latex_accents", False),
+        escape="\\" not in raw_text,
+    )
+    width_value = _normalize_fillin_width(element.get("data-width", ""))
+    if width_value:
+        latex = f"\\fillin[{answer}][{width_value}]"
+    else:
+        latex = f"\\fillin[{answer}]"
+    element.replace_with(mark_processed(NavigableString(latex)))
+
+
+@renders(
     "img",
     phase=RenderPhase.POST,
     priority=120,
@@ -594,6 +706,8 @@ def render_solution_admonition(element: Tag, context: RenderContext) -> None:
 )
 def render_solution_callouts(element: Tag, context: RenderContext) -> None:
     """Convert solution callouts into exam.cls solution environments."""
+    if element.parent is None:
+        return
     classes = gather_classes(element.get("class"))
     title = element.attrs.pop("data-callout-title", "")
     is_solution = (
@@ -812,9 +926,11 @@ def register(renderer: object) -> None:
     register_fn = getattr(renderer, "register", None)
     if callable(register_fn):
         register_fn(set_exam_callouts)
+        register_fn(render_fillin_placeholders)
         register_fn(strip_fenced_code_in_blocks)
         register_fn(strip_fenced_code_in_pre)
         register_fn(render_exam_checkboxes)
+        register_fn(render_exam_fillin)
         register_fn(render_exam_image_paragraphs)
         register_fn(render_exam_images)
         register_fn(render_solution_admonition)

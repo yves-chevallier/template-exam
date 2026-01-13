@@ -32,9 +32,9 @@ int main(int argc, const char * argv[]) {
 
 Can you name the three primary colors in the RGB color model?
 
-- [red]{w=50}
-- [green]{w=50}
-- [blue]{w=50}
+1. [red]{w=50}
+2. [green]{w=50}
+3. [blue]{w=50}
 
 !!! solution
 
@@ -44,7 +44,7 @@ Can you name the three primary colors in the RGB color model?
 
 Can you name the three relations in the following diagram?
 
-![Relations](assets/relationship.drawio)
+![Relations](assets/relationship.drawio){ width=50% }
 
 #### -
 

@@ -741,8 +741,8 @@ wheels = [
 
 [[package]]
 name = "texsmith"
-version = "0.2.2.dev9"
-source = { git = "https://github.com/yves-chevallier/texsmith.git#b83b8ea7d2411487e57c7234dfabde43ab37a8d0" }
+version = "0.2.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "cairosvg" },
@@ -768,11 +768,41 @@ dependencies = [
     { name = "typer" },
     { name = "unicodeblocks" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/67/6f/fad85a8a2f8c3e5ba5fb8fb74ee589f5e0421ca2768e5b1c51813e72f774/texsmith-0.2.1.tar.gz", hash = "sha256:7c6ea99f548eca0854d2b3ba0e1c54cd6c440cc4cbb7e401c5670869ee0dfd65", size = 3395638, upload-time = "2025-12-28T19:26:32.724Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/b6/fea8c082035f20d4a6e845635585794e7d14dec40859e942cffd9c354450/texsmith-0.2.1-py3-none-any.whl", hash = "sha256:18fa4bd09153fb58c1e69ff5067260e7754c4ac96f505fd7dbe6aaa4485da947", size = 514049, upload-time = "2025-12-28T19:26:30.804Z" },
+]
 
 [[package]]
 name = "texsmith-exam"
 version = "0.1.0"
-source = { directory = "texsmith_exam" }
+source = { editable = "texsmith_exam" }
+dependencies = [
+    { name = "texsmith-template-exam" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "texsmith-template-exam" }]
+
+[[package]]
+name = "texsmith-template-exam"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "texsmith" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "texsmith-exam" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "texsmith", specifier = ">=0.2.1,<1.0" },
+    { name = "texsmith-exam", marker = "extra == 'dev'", editable = "texsmith_exam" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "text-unidecode"
@@ -793,21 +823,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a3/ae/2ca4913e5c0f09781d75482874c3a95db9105462a92ddd303c7d285d3df2/tinycss2-1.5.1.tar.gz", hash = "sha256:d339d2b616ba90ccce58da8495a78f46e55d4d25f9fd71dfd526f07e7d53f957", size = 88195, upload-time = "2025-11-23T10:29:10.082Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/60/45/c7b5c3168458db837e8ceab06dc77824e18202679d0463f0e8f002143a97/tinycss2-1.5.1-py3-none-any.whl", hash = "sha256:3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661", size = 28404, upload-time = "2025-11-23T10:29:08.676Z" },
-]
-
-[[package]]
-name = "ts-exam"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "texsmith" },
-    { name = "texsmith-exam" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "texsmith", git = "https://github.com/yves-chevallier/texsmith.git" },
-    { name = "texsmith-exam", directory = "texsmith_exam" },
 ]
 
 [[package]]
