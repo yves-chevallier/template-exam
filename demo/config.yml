@@ -2,6 +2,21 @@ title: Demo Exam
 subtitle: Various questions about everything and nothing
 author: Dr. Emmett Lathrop Brown
 language: en
+fonts:
+  family: lm-sans
+typesetting:
+  paragraph:
+    indent: none
+    spacing: 1.1em
+  leading: onehalf
+press:
+  paper:
+    margin:
+      top: 12mm
+      left: 2.4cm
+      right: 2.4cm
+      bottom: 2.4cm
+    marks: false
 exam:
   type: TE
   department: TIN
