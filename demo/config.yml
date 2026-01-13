@@ -1,0 +1,20 @@
+title: Demo Exam
+subtitle: Various questions about everything and nothing
+author: Dr. Emmett Lathrop Brown
+language: en
+exam:
+  type: TE
+  department: TIN
+  school: HEIG-VD
+  course: General Knowledge
+  duration: 10 # minutes
+  rules:
+    - Write your **first name** and **last name** legibly on each page.
+    - Write legibly, using a pen or a dark pencil.
+    - Answer the questions in the appropriate areas.
+    - Review all your answers before submitting your work.
+    - Make sure you have not forgotten to complete a page of the exam.
+    - Return all sheets, one sheet per problem.
+    - Return all draft sheets as well as the cover page.
+    - Answers given on draft sheets are neither accepted nor graded.
+    - No means of communication allowed.
