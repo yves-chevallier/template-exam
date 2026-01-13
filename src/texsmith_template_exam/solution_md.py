@@ -9,9 +9,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 
-_SOLUTION_PATTERN = re.compile(
-    r"^\s*!!!\s+solution(?:\s*\{(?P<attrs>[^}]*)\})?\s*$", re.IGNORECASE
-)
+_SOLUTION_PATTERN = re.compile(r"^\s*!!!\s+solution(?:\s*\{(?P<attrs>[^}]*)\})?\s*$", re.IGNORECASE)
 _LINES_PATTERN = re.compile(r"\blines\s*=\s*(\d+)\b")
 _GRID_PATTERN = re.compile(r"\bgrid\s*=\s*([^\s,}]+)\b")
 _BOX_PATTERN = re.compile(r"\bbox\s*=\s*([^\s,}]+)\b")
@@ -63,8 +61,7 @@ class _SolutionBlockPreprocessor(Preprocessor):
                 if current.strip() == "":
                     next_index = index + 1
                     if next_index < total and (
-                        lines[next_index].startswith("    ")
-                        or lines[next_index].startswith("\t")
+                        lines[next_index].startswith("    ") or lines[next_index].startswith("\t")
                     ):
                         content.append("")
                         index += 1

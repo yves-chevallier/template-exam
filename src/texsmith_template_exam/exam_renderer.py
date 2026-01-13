@@ -6,7 +6,6 @@ import re
 
 from bs4.element import NavigableString, Tag
 from slugify import slugify
-
 from texsmith.adapters.handlers._helpers import coerce_attribute, mark_processed
 from texsmith.adapters.handlers.admonitions import gather_classes
 from texsmith.adapters.handlers.blocks import _prepare_rich_text_content
@@ -16,6 +15,7 @@ from texsmith.core.callouts import DEFAULT_CALLOUTS, merge_callouts, normalise_c
 from texsmith.core.context import RenderContext
 from texsmith.core.rules import DOCUMENT_NODE, RenderPhase, renders
 from texsmith.fonts.scripts import render_moving_text
+
 
 _FILLIN_PATTERN = re.compile(r"\[([^\]\n]+)\](?!\()(?:\{([^}\n]+)\})?")
 _FILLIN_WIDTH_PATTERN = re.compile(r"\b(?:w|width)\s*=\s*([^\s,}]+)")
@@ -32,10 +32,7 @@ def _set_flag(context: RenderContext, key: str, value: bool) -> None:
 
 def _ensure_solution_callout(context: RenderContext) -> None:
     callouts = context.runtime.get("callouts_definitions")
-    if isinstance(callouts, dict):
-        merged = dict(callouts)
-    else:
-        merged = merge_callouts(DEFAULT_CALLOUTS)
+    merged = dict(callouts) if isinstance(callouts, dict) else merge_callouts(DEFAULT_CALLOUTS)
     if "solution" not in merged:
         merged["solution"] = {
             "background_color": "F5F5F5",
@@ -53,7 +50,7 @@ def _ensure_solution_callout(context: RenderContext) -> None:
     priority=5,
     name="exam_callout_defaults",
 )
-def set_exam_callouts(root: Tag, context: RenderContext) -> None:
+def set_exam_callouts(_root: Tag, context: RenderContext) -> None:
     """Ensure the solution callout is registered before callouts render."""
     _ensure_solution_callout(context)
 
@@ -156,7 +153,11 @@ def _normalize_style_choice(value: object | None, *, default: str, aliases: dict
     candidate = str(value).strip().lower()
     if not candidate:
         return default
-    return aliases.get(candidate, candidate) if candidate in aliases or candidate in aliases.values() else default
+    return (
+        aliases.get(candidate, candidate)
+        if candidate in aliases or candidate in aliases.values()
+        else default
+    )
 
 
 def _exam_style(context: RenderContext) -> dict[str, object]:
@@ -504,7 +505,7 @@ def render_fillin_placeholders(root: Tag, context: RenderContext) -> None:
         cursor = 0
         for match in _FILLIN_PATTERN.finditer(text):
             if match.start() > cursor:
-                segments.append(NavigableString(text[cursor: match.start()]))
+                segments.append(NavigableString(text[cursor : match.start()]))
             answer_raw = match.group(1)
             attrs = match.group(2) or ""
             answer = render_moving_text(
@@ -517,9 +518,9 @@ def render_fillin_placeholders(root: Tag, context: RenderContext) -> None:
             if not width_value:
                 scale_raw = _extract_fillin_scale(attrs)
                 scale = _coerce_fillin_scale(
-                scale_raw if scale_raw else _fillin_scale_from_context(context),
-                default=2.5,
-            )
+                    scale_raw if scale_raw else _fillin_scale_from_context(context),
+                    default=2.5,
+                )
                 width_value = _auto_fillin_width(answer_raw, scale)
             latex = f"\\fillin[{answer}][{width_value}]"
             segments.append(mark_processed(NavigableString(latex)))
@@ -889,7 +890,7 @@ def render_solution_callouts(element: Tag, context: RenderContext) -> None:
     nestable=True,
     auto_mark=False,
 )
-def promote_solution_admonitions(element: Tag, context: RenderContext) -> None:
+def promote_solution_admonitions(element: Tag, _context: RenderContext) -> None:
     """Convert solution admonitions into exam solutions before callout handling."""
     classes = gather_classes(element.get("class"))
     if "admonition" not in classes:
@@ -968,8 +969,7 @@ def render_exam_headings(element: Tag, context: RenderContext) -> None:
 
     ref = coerce_attribute(element.get("id"))
     points = _normalize_points(
-        coerce_attribute(element.get("points"))
-        or coerce_attribute(element.get("data-points"))
+        coerce_attribute(element.get("points")) or coerce_attribute(element.get("data-points"))
     )
     if not ref:
         slug = slugify(plain_text, separator="-")

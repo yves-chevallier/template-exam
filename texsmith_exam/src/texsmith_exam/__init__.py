@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from re import Match
 import re
+from re import Match
 import xml.etree.ElementTree as ElementTree
 
 from markdown import Extension, Markdown
 from markdown.inlinepatterns import InlineProcessor
 from markdown.util import AtomicString
+
 
 _FILLIN_PATTERN = r"\[([^\]\n]+)\](?!\()(?:\{([^}\n]+)\})?"
 _FILLIN_WIDTH_PATTERN = re.compile(r"\b(?:w|width)\s*=\s*([^\s,}]+)")

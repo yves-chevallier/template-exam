@@ -9,6 +9,7 @@ from texsmith.adapters.latex.renderer import LaTeXRenderer
 from texsmith.adapters.markdown import DEFAULT_MARKDOWN_EXTENSIONS, render_markdown
 from texsmith.core.templates.base import WrappableTemplate
 
+
 _RENDERER: LaTeXRenderer | None = None
 
 
@@ -31,4 +32,3 @@ class Template(WrappableTemplate):
     def __init__(self) -> None:
         super().__init__(Path(__file__).resolve().parent)
         self.environment.filters.setdefault("markdown_to_latex", _markdown_to_latex)
-
