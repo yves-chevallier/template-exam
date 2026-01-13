@@ -1,14 +1,27 @@
 [project]
-name = "ts-exam"
+name = "texsmith-template-exam"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "TeXSmith exam template."
 requires-python = ">=3.13"
 dependencies = [
-    "texsmith>=0.2.1",
-    "texsmith-exam",
+    "texsmith>=0.6,<1.0",
 ]
+
+[project.entry-points."texsmith.templates"]
+exam = "texsmith_template_exam:template"
+
+[project.entry-points."texsmith.renderers"]
+exam = "texsmith_template_exam.exam_renderer:register"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/texsmith_template_exam"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/texsmith_template_exam/exam" = "texsmith_template_exam/exam"
 
 [tool.uv.sources]
 texsmith = { git = "https://github.com/yves-chevallier/texsmith.git" }
-texsmith-exam = { path = "texsmith_exam" }
