@@ -29,6 +29,7 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "ruff>=0.14.1",
+    "texsmith-exam",
     "texsmith",
 ]
 docs = [
