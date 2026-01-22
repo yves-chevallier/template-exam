@@ -59,6 +59,7 @@
 \usepackage{ifthen}
 \usepackage{eso-pic}
 \usepackage[\VAR{language|default('english')}]{babel}
+\usepackage[normalem]{ulem}
 \usepackage{lastpage}
 \BLOCK{ if not ts_typesetting_enabled|default(false) }
 \setlength{\parskip}{1.2em}
@@ -266,13 +267,15 @@
 \BLOCK{ endif }
 \BLOCK{ set author_rendered = author_ns.lines|join('\\\\') }
 \BLOCK{ set author_trim = author_rendered|trim }
-\BLOCK{ set date_trim = date_value|default('')|trim }
+\BLOCK{ set date_formatted = date_value|exam_date(lang) }
+\BLOCK{ set date_trim = date_formatted|default('')|trim }
 \BLOCK{ set course_trim = course|default('')|trim }
+\BLOCK{ set duration_trim = duration|default('')|string|trim }
 
 \title{\VAR{display_title}}
 \author{\VAR{author_rendered}}
 
-\def\thedate{\VAR{date_value if date_value else "\\today"}}
+\def\thedate{\VAR{date_formatted if date_formatted else "\\today"}}
 \def\department{\VAR{department}}
 \def\school{\VAR{school}}
 \def\subtitle{\VAR{subtitle}}
@@ -327,28 +330,27 @@
   \logo[top=10mm,height=1.8cm]
   \AddToShipoutPictureFG*{%
     \AtPageUpperLeft{%
-      \put(1cm,-2.5cm){%
-        \begin{minipage}[t]{\dimexpr\paperwidth-2cm\relax}
+      \put(1cm,-2.8cm){%
+        \begin{minipage}[t]{\dimexpr\paperwidth-2.5cm\relax}
           \hfill
-          \begin{minipage}[t]{5.5cm}\raggedleft\bfseries \VAR{label_name}~:\end{minipage}%
+          \begin{minipage}[t]{5cm}\raggedleft\bfseries \VAR{label_name}~:\end{minipage}%
           \hspace{0.5em}%
-          \begin{minipage}[t]{8cm}\fbox{\makebox[\linewidth][l]{\rule{0pt}{0.8cm}}}\end{minipage}%
+          \begin{minipage}[t]{7cm}\fbox{\makebox[\linewidth][l]{\rule{0pt}{0.8cm}}}\end{minipage}%
         \end{minipage}%
       }%
     }%
   }
   \null
-  \vskip 8em%
+  \vskip 1cm%
+  \vfil%
   \begin{center}%
-    {\LARGE \@title \par}%
-    \ifprintanswers
-      \large \textbf{\textcolor{red}{Solution}}%
-    \fi
+    {\Huge \bfseries \@title \par}%
     \vskip .2em%
     {\itshape\subtitle\par}%
-    \vskip .6em%
-    {\itshape\school~--~\department\par}%
-    \vskip 2.5em%
+    {\itshape\department\par}%
+    \vfil
+    {\large \thedate}%
+    \vskip 1em%
     \BLOCK{ if author_trim }
     {%
       \lineskip .2em%
@@ -361,13 +363,6 @@
       \end{minipage}%
     }%
     \vskip 1em%
-    \BLOCK{ endif }
-    \BLOCK{ if course_trim }
-    {\large \course\par}%
-    \vskip 0.4em%
-    \BLOCK{ endif }
-    \BLOCK{ if date_trim }
-    {\large \thedate}%
     \BLOCK{ endif }
   \end{center}%
   \par
@@ -391,21 +386,32 @@
   \thispagestyle{empty}
 
   \begin{center}
-    \noindent \VAR{label_duration} : \duration~minutes
-    \vfil
-  \end{center}
-
-  \begin{center}
+    % Make the header bold without changing labels or alignment.
+    \makeatletter
+    \let\exam@vqword\@vqword
+    \let\exam@vpgword\@vpgword
+    \let\exam@vtword\@vtword
+    \let\exam@vpword\@vpword
+    \let\exam@vsword\@vsword
+    \def\@vqword{\textbf{\exam@vqword}}
+    \def\@vpgword{\textbf{\exam@vpgword}}
+    \def\@vtword{\textbf{\exam@vtword}}
+    \def\@vpword{\textbf{\exam@vpword}}
+    \def\@vsword{\textbf{\exam@vsword}}
+    \makeatother
     \gradetable[v][questions]
   \end{center}
   \vfil
 
-  \BLOCK{ if rules }
+\BLOCK{ if rules }
   \begin{center}
     \begin{examrules}
       \textbf{\VAR{label_rules} : }
       \vskip 1em%
       \begin{itemize}
+      \BLOCK{ if duration_trim }
+        \item Durée du travail \duration~minutes.
+      \BLOCK{ endif }
       \BLOCK{ for rule in rules }
         \item \VAR{rule|markdown_to_latex}
       \BLOCK{ endfor }
@@ -414,6 +420,8 @@
   \end{center}
   \BLOCK{ endif }
 \end{coverpages}
+% Add extra spacing between the page edge and the header after the cover page.
+\addtolength{\topmargin}{0.5cm}
 \BLOCK{ endif }
 
 \BLOCK{ set has_questions = ("\\question" in mainmatter) or ("\\titledquestion" in mainmatter) or ("\\input" in mainmatter) }

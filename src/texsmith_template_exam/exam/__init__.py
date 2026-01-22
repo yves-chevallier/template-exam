@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -27,12 +29,70 @@ def _markdown_to_latex(value: Any) -> str:
     return _RENDERER.render(html).strip()
 
 
+def _format_exam_date(value: Any, lang: str = "fr") -> str:
+    if value is None:
+        return ""
+    text = str(value).strip()
+    if not text:
+        return ""
+    if lang.lower() not in {"fr", "french", "francais", "français"}:
+        return text
+
+    has_time = bool(re.search(r"[t\\s]\\d{2}:\\d{2}", text, re.IGNORECASE))
+    candidate = text
+    if candidate.endswith("Z"):
+        candidate = candidate[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(candidate)
+    except ValueError:
+        try:
+            dt = datetime.strptime(candidate, "%Y-%m-%d")
+        except ValueError:
+            return text
+
+    weekdays = [
+        "lundi",
+        "mardi",
+        "mercredi",
+        "jeudi",
+        "vendredi",
+        "samedi",
+        "dimanche",
+    ]
+    months = [
+        "janvier",
+        "fevrier",
+        "mars",
+        "avril",
+        "mai",
+        "juin",
+        "juillet",
+        "aout",
+        "septembre",
+        "octobre",
+        "novembre",
+        "decembre",
+    ]
+    weekday = weekdays[dt.weekday()]
+    month = months[dt.month - 1]
+    date_part = f"{weekday.capitalize()} {dt.day} {month} {dt.year}"
+
+    if not has_time:
+        return date_part
+
+    hour = dt.hour
+    minute = dt.minute
+    time_part = f"{hour}h{minute:02d}"
+    return f"{date_part} à {time_part}"
+
+
 class Template(WrappableTemplate):
     """Exam template with extra Jinja filters."""
 
     def __init__(self) -> None:
         super().__init__(Path(__file__).resolve().parent)
         self.environment.filters.setdefault("markdown_to_latex", _markdown_to_latex)
+        self.environment.filters.setdefault("exam_date", _format_exam_date)
 
     def prepare_context(  # type: ignore[override]
         self,
