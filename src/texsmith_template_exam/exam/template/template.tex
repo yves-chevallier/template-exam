@@ -71,6 +71,9 @@
 \usepackage{etoolbox}
 \usepackage{afterpage}
 \usepackage[\VAR{language|default('english')}]{babel}
+\BLOCK{ if lang in ['french', 'fr', 'francais'] }
+\frenchsetup{ThinColonSpace=true}
+\BLOCK{ endif }
 \usepackage[normalem]{ulem}
 \usepackage{lastpage}
 \BLOCK{ if not ts_typesetting_enabled|default(false) }
