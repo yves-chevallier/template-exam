@@ -104,6 +104,13 @@ allow_empty = true
 sources = ["exam.problem-label", "exam.problem_label", "problem-label", "problem_label"]
 description = "Label for each question block (defaults to language-specific 'Problem')."
 
+[latex.template.attributes.fillin_style]
+default = "line"
+type = "string"
+allow_empty = false
+sources = ["exam.fillin-style", "exam.fillin_style", "fillin-style", "fillin_style"]
+description = "Style for \\fillin placeholders: 'line' (default) or 'dotted'."
+
 [latex.template.attributes.duration]
 default = ""
 type = "any"

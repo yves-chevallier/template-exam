@@ -6,6 +6,8 @@
 \BLOCK{ set date_value = date|default('')|trim }
 \BLOCK{ set titlepage_raw = titlepage|default('cover')|string|lower }
 \BLOCK{ set titlepage_minimal = titlepage_raw == 'minimal' }
+\BLOCK{ set fillin_style_raw = fillin_style|default('line')|string|lower|trim }
+\BLOCK{ set fillin_style = fillin_style_raw if fillin_style_raw in ['line', 'dotted'] else 'line' }
 \BLOCK{ set lang = language|default('english')|lower }
 \BLOCK{ if lang in ['french', 'fr', 'francais'] }
   \BLOCK{ set label_problem_default = "Probl\\`eme" }
@@ -138,10 +140,17 @@
 }
 
 \makeatletter
+\newcommand{\texsmithfillinline}[1]{%
+  \BLOCK{ if fillin_style == 'dotted' }
+  \hbox to #1{\dotfill}%
+  \BLOCK{ else }
+  \hbox to #1{\hrulefill}%
+  \BLOCK{ endif }
+}
 \def\@fillin@relay[#1]{%
   \leavevmode
   \ifprintanswers
-    \rlap{\raise -\answerclearance \hbox to #1{\hrulefill}}%
+    \rlap{\raise -\answerclearance \texsmithfillinline{#1}}%
     \begingroup
       \setbox0 \hbox{\color@begingroup\fillin@ans\color@endgroup}%
       \ifdim\wd0 > #1\relax
@@ -151,7 +160,7 @@
       \fi
     \endgroup
   \else
-    \raise -\answerclearance \hbox to #1{\hrulefill}%
+    \raise -\answerclearance \texsmithfillinline{#1}%
   \fi
 }
 \unframedsolutions
