@@ -460,14 +460,9 @@
 \def\@maketitle{%
   \logo[top=10mm,left=24mm,height=1.45cm]
   \begingroup
-  \centering
   \vskip \dimexpr0pt-\headheight-\headsep-\topskip-3mm\relax%
-  \noindent\makebox[\linewidth]{%
-    \ifprintanswers
-      \makebox[0pt][r]{\large\textbf{\textcolor{red}{Solution}}}%
-    \fi
-    {\LARGE \@title}%
-  }\par
+  {\LARGE \noindent\makebox[\linewidth]{\@title\hfill\ifprintanswers\textbf{\textcolor{red}{Solution}}\fi}\par}%
+  \centering
   \vskip .15em%
   {\itshape\subtitle\par}%
   \vskip .5em%
