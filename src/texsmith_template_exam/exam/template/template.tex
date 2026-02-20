@@ -138,6 +138,22 @@
 }
 
 \makeatletter
+\def\@fillin@relay[#1]{%
+  \leavevmode
+  \ifprintanswers
+    \rlap{\raise -\answerclearance \hbox to #1{\hrulefill}}%
+    \begingroup
+      \setbox0 \hbox{\color@begingroup\fillin@ans\color@endgroup}%
+      \ifdim\wd0 > #1\relax
+        \hbox{\color@begingroup\fillin@ans\color@endgroup}%
+      \else
+        \hbox to #1{\color@begingroup\fillin@ans\hfil\color@endgroup}%
+      \fi
+    \endgroup
+  \else
+    \raise -\answerclearance \hbox to #1{\hrulefill}%
+  \fi
+}
 \unframedsolutions
 \renewcommand{\solutiontitle}{}
 \renewenvironment{TheSolution}%
