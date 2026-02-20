@@ -198,18 +198,32 @@ def _in_solution_mode(context: RenderContext) -> bool:
 
 
 def _in_compact_mode(context: RenderContext) -> bool:
-    overrides = context.runtime.get("template_overrides")
-    if isinstance(overrides, dict):
-        value = overrides.get("compact")
+    def _is_truthy(value: object) -> bool:
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
             return value.strip().lower() in {"1", "true", "yes", "on"}
+        return False
+
+    overrides = context.runtime.get("template_overrides")
+    if isinstance(overrides, dict):
+        value = overrides.get("compact")
+        if _is_truthy(value):
+            return True
+        press = overrides.get("press")
+        if isinstance(press, dict) and _is_truthy(press.get("compact")):
+            return True
     value = context.runtime.get("compact")
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, str):
-        return value.strip().lower() in {"1", "true", "yes", "on"}
+    if _is_truthy(value):
+        return True
+
+    # Fallback for project light builds where compact mode is generated in a
+    # dedicated source directory before front-matter overrides are propagated.
+    document_path = context.runtime.get("document_path")
+    if document_path is not None:
+        path_text = str(document_path).replace("\\", "/").lower()
+        if "/light-src/" in path_text or path_text.endswith("-light.md") or ".light." in path_text:
+            return True
     return False
 
 
