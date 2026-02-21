@@ -8,6 +8,10 @@
 \BLOCK{ set titlepage_minimal = titlepage_raw == 'minimal' }
 \BLOCK{ set fillin_style_raw = fillin_style|default('line')|string|lower|trim }
 \BLOCK{ set fillin_style = fillin_style_raw if fillin_style_raw in ['line', 'dotted'] else 'line' }
+\BLOCK{ set fillin_solution_underline_value = fillin_solution_underline|default(false) }
+\BLOCK{ if exam is defined and exam }
+  \BLOCK{ set fillin_solution_underline_value = exam.get('fillin_solution_underline', exam.get('fillin-solution-underline', fillin_solution_underline_value)) }
+\BLOCK{ endif }
 \BLOCK{ set lang = language|default('english')|lower }
 \BLOCK{ if lang in ['french', 'fr', 'francais'] }
   \BLOCK{ set label_problem_default = "Probl\\`eme" }
@@ -103,21 +107,48 @@
 \AddToHook{env/longtable/begin}{\texsmithtabledepthinc}
 \AddToHook{env/longtable/end}{\texsmithtabledepthdec}
 \makeatletter
+\newif\iftexsmithfillinsolutionunderline
+\BLOCK{ if fillin_solution_underline_value }
+\texsmithfillinsolutionunderlinetrue
+\BLOCK{ else }
+\texsmithfillinsolutionunderlinefalse
+\BLOCK{ endif }
 \let\texsmith@origfillin\fillin
 \RenewDocumentCommand{\fillin}{o o}{%
-  \IfNoValueTF{#1}{%
-    \IfNoValueTF{#2}{%
+  \ifprintanswers
+    % In solution mode, render only the answer text (no reserved width).
+    \IfNoValueTF{#1}{%
       \texsmith@origfillin
     }{%
-      \texsmith@origfillin[][#2]%
+      \iftexsmithfillinsolutionunderline
+        \IfNoValueTF{#2}{%
+          \texsmith@origfillin[#1]%
+        }{%
+          \texsmith@origfillin[#1][#2]%
+        }%
+      \else
+        \ifnum\texsmithtabledepth>0\relax
+          {\bfseries #1}%
+        \else
+          {\bfseries #1}\nobreak\ \ignorespaces
+        \fi
+      \fi
     }%
-  }{%
-    \IfNoValueTF{#2}{%
-      \texsmith@origfillin[#1]%
+  \else
+    \IfNoValueTF{#1}{%
+      \IfNoValueTF{#2}{%
+        \texsmith@origfillin
+      }{%
+        \texsmith@origfillin[][#2]%
+      }%
     }{%
-      \texsmith@origfillin[#1][#2]%
+      \IfNoValueTF{#2}{%
+        \texsmith@origfillin[#1]%
+      }{%
+        \texsmith@origfillin[#1][#2]%
+      }%
     }%
-  }%
+  \fi
   \ifnum\texsmithtabledepth>0\relax
     \texsmithtablefillinstrut
   \fi
@@ -150,15 +181,19 @@
 \def\@fillin@relay[#1]{%
   \leavevmode
   \ifprintanswers
-    \rlap{\raise -\answerclearance \texsmithfillinline{#1}}%
-    \begingroup
-      \setbox0 \hbox{\color@begingroup\fillin@ans\color@endgroup}%
-      \ifdim\wd0 > #1\relax
-        \hbox{\color@begingroup\fillin@ans\color@endgroup}%
-      \else
-        \hbox to #1{\color@begingroup\fillin@ans\hfil\color@endgroup}%
-      \fi
-    \endgroup
+    \iftexsmithfillinsolutionunderline
+      \rlap{\raise -\answerclearance \texsmithfillinline{#1}}%
+      \begingroup
+        \setbox0 \hbox{\color@begingroup\bfseries\fillin@ans\color@endgroup}%
+        \ifdim\wd0 > #1\relax
+          \hbox{\color@begingroup\bfseries\fillin@ans\color@endgroup}%
+        \else
+          \hbox to #1{\color@begingroup\bfseries\hfil\fillin@ans\hfil\color@endgroup}%
+        \fi
+      \endgroup
+    \else
+      {\bfseries\color@begingroup\fillin@ans\color@endgroup}\nobreak%
+    \fi
   \else
     \raise -\answerclearance \texsmithfillinline{#1}%
   \fi

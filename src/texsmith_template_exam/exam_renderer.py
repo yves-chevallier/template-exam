@@ -182,18 +182,31 @@ def _exam_style(context: RenderContext) -> dict[str, object]:
 
 
 def _in_solution_mode(context: RenderContext) -> bool:
-    overrides = context.runtime.get("template_overrides")
-    if isinstance(overrides, dict):
-        value = overrides.get("solution")
+    def _is_truthy(value: object) -> bool:
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
             return value.strip().lower() in {"1", "true", "yes", "on"}
+        return False
+
+    overrides = context.runtime.get("template_overrides")
+    if isinstance(overrides, dict):
+        value = overrides.get("solution")
+        if _is_truthy(value):
+            return True
+        press = overrides.get("press")
+        if isinstance(press, dict) and _is_truthy(press.get("solution")):
+            return True
     value = context.runtime.get("solution")
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, str):
-        return value.strip().lower() in {"1", "true", "yes", "on"}
+    if _is_truthy(value):
+        return True
+
+    # Fallback for project solution builds when overrides are not propagated.
+    document_path = context.runtime.get("document_path")
+    if document_path is not None:
+        path_text = str(document_path).replace("\\", "/").lower()
+        if "/solution/" in path_text or path_text.endswith("-solutions.md") or ".solution." in path_text:
+            return True
     return False
 
 
@@ -570,7 +583,10 @@ def _replace_fillin_placeholders(
                     default=2.5,
                 )
                 width_value = _auto_fillin_width(answer_raw, scale)
-            latex = f"\\fillin[{answer}][{width_value}]"
+            if _in_solution_mode(context):
+                latex = f"\\fillin[{answer}]"
+            else:
+                latex = f"\\fillin[{answer}][{width_value}]"
             segments.append(mark_processed(NavigableString(latex)))
             cursor = match.end()
         if cursor < len(text):
@@ -639,7 +655,10 @@ def render_table_fillin_cells(element: Tag, context: RenderContext) -> None:
             default=2.5,
         )
         width_value = _auto_fillin_width(answer_raw, scale)
-    latex = f"\\fillin[{answer}][{width_value}]"
+    if _in_solution_mode(context):
+        latex = f"\\fillin[{answer}]"
+    else:
+        latex = f"\\fillin[{answer}][{width_value}]"
     element.clear()
     element.append(mark_processed(NavigableString(latex)))
 
@@ -808,7 +827,10 @@ def render_exam_fillin(element: Tag, context: RenderContext) -> None:
             default=2.5,
         )
         width_value = _auto_fillin_width(raw_text, scale)
-    latex = f"\\fillin[{answer}][{width_value}]"
+    if _in_solution_mode(context):
+        latex = f"\\fillin[{answer}]"
+    else:
+        latex = f"\\fillin[{answer}][{width_value}]"
     element.replace_with(mark_processed(NavigableString(latex)))
 
 
