@@ -1233,17 +1233,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "texsmith-exam"
-version = "0.1.0"
-source = { editable = "texsmith_exam" }
-dependencies = [
-    { name = "texsmith-template-exam" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "texsmith-template-exam" }]
-
-[[package]]
 name = "texsmith-template-exam"
 version = "0.1.0"
 source = { editable = "." }
@@ -1251,17 +1240,11 @@ dependencies = [
     { name = "texsmith" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "texsmith-exam" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
     { name = "ruff" },
     { name = "texsmith" },
-    { name = "texsmith-exam" },
 ]
 docs = [
     { name = "mike" },
@@ -1275,18 +1258,13 @@ docs = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "texsmith", git = "https://github.com/yves-chevallier/texsmith.git" },
-    { name = "texsmith-exam", marker = "extra == 'dev'", editable = "texsmith_exam" },
-]
-provides-extras = ["dev"]
+requires-dist = [{ name = "texsmith", git = "https://github.com/yves-chevallier/texsmith.git" }]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.0" },
     { name = "ruff", specifier = ">=0.14.1" },
     { name = "texsmith", git = "https://github.com/yves-chevallier/texsmith.git" },
-    { name = "texsmith-exam", editable = "texsmith_exam" },
 ]
 docs = [
     { name = "mike", specifier = ">=2.1.2" },

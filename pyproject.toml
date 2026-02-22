@@ -7,13 +7,7 @@ dependencies = [
     "texsmith>=0.2.1,<1.0",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "texsmith-exam",
-]
-
 [tool.uv.sources]
-texsmith-exam = { path = "texsmith_exam", editable = true }
 texsmith = { git = "https://github.com/yves-chevallier/texsmith.git" }
 
 [project.entry-points."texsmith.templates"]
@@ -30,7 +24,6 @@ build-backend = "hatchling.build"
 dev = [
     "ruff>=0.14.1",
     "pytest>=8.0",
-    "texsmith-exam",
     "texsmith",
 ]
 docs = [
@@ -115,7 +108,7 @@ ignore = [
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-sort-within-sections = true
-known-first-party = ["texsmith_exam", "texsmith_template_exam"]
+known-first-party = ["texsmith_template_exam"]
 section-order = ["future","standard-library","third-party","first-party","local-folder"]
 lines-after-imports = 2
 
