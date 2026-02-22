@@ -76,6 +76,7 @@
 \usepackage{eso-pic}
 \usepackage{etoolbox}
 \usepackage{afterpage}
+\usepackage{needspace}
 \usepackage[\VAR{language|default('english')}]{babel}
 \BLOCK{ if lang in ['french', 'fr', 'francais'] }
 \frenchsetup{ThinColonSpace=true}
@@ -238,8 +239,19 @@
   #1
 }
 
-% Ensure code blocks start on a fresh line inside list items (no label overlap).
-\BeforeBeginEnvironment{code}{\par\noindent\vspace{-1em}}
+% Keep part labels with the following code block and reduce vertical offset.
+\makeatletter
+\@ifpackageloaded{tcolorbox}{%
+  \tcbset{code/.append style={before skip=-0.95\baselineskip,after skip=0.4\baselineskip,top=0pt}}%
+}{}
+\makeatother
+\BeforeBeginEnvironment{code}{%
+  \nopagebreak\needspace{6\baselineskip}%
+  \makeatletter
+  \if@inlabel\else\vspace{0.5em}\fi
+  \makeatother
+  \noindent%
+}
 \AfterEndEnvironment{code}{\par}
 \renewenvironment{solutionorgrid}[1][0pt]%
   {%
@@ -397,10 +409,18 @@
   \setlength{\parsep}{0.4em}%
 }
 \renewcommand{\partshook}{%
-  \setlength{\parsep}{0.4em}%
+  \setlength{\topsep}{0.25em}%
+  \setlength{\partopsep}{0pt}%
+  \setlength{\parskip}{0pt}%
+  \setlength{\parsep}{0pt}%
+  \setlength{\itemsep}{0pt}%
 }
 \renewcommand{\subpartshook}{%
-  \setlength{\parsep}{0.4em}%
+  \setlength{\topsep}{0.25em}%
+  \setlength{\partopsep}{0pt}%
+  \setlength{\parskip}{0pt}%
+  \setlength{\parsep}{0pt}%
+  \setlength{\itemsep}{0pt}%
 }
 \renewcommand{\choiceshook}{%
   % Reduce the extra 2.5em indent that exam.cls adds for choices.
