@@ -2,10 +2,29 @@
 name = "texsmith-exam"
 dynamic = ["version"]
 description = "TeXSmith exam template."
+readme = "README.md"
 requires-python = ">=3.13"
+authors = [
+    { name = "Yves Chevallier" },
+]
+keywords = ["texsmith", "latex", "exam", "markdown", "template"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+]
 dependencies = [
     "texsmith>=0.2.1,<1.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/yves-chevallier/texsmith-exam"
+Repository = "https://github.com/yves-chevallier/texsmith-exam"
+Issues = "https://github.com/yves-chevallier/texsmith-exam/issues"
+Documentation = "https://yves-chevallier.github.io/texsmith-exam/"
 
 [tool.uv.sources]
 texsmith = { git = "https://github.com/yves-chevallier/texsmith.git" }
