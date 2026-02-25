@@ -77,6 +77,8 @@
 \usepackage{etoolbox}
 \usepackage{afterpage}
 \usepackage{needspace}
+\usepackage{amsfonts}
+\usepackage{amssymb}
 \usepackage[\VAR{language|default('english')}]{babel}
 \BLOCK{ if lang in ['french', 'fr', 'francais'] }
 \frenchsetup{ThinColonSpace=true}
@@ -395,7 +397,12 @@
   \fi
 }
 \makeatother
-\qformat{\vbox{\hbox to \hsize{\textbf{\VAR{label_problem} \thequestion : \thequestiontitle}\hfill\ExamQuestionPoints}\vspace{0.8em}}}
+\newcommand{\texsmithquestiontitle}{%
+  \ifthenelse{\equal{\thequestiontitle}{}}{}{%
+    \ifthenelse{\equal{\thequestiontitle}{\thequestion}}{}{:\space\thequestiontitle}%
+  }%
+}
+\qformat{\vbox{\hbox to \hsize{\textbf{\VAR{label_problem} \thequestion\texsmithquestiontitle}\hfill\ExamQuestionPoints}\vspace{0.8em}}}
 \renewcommand{\partlabel}{\textbf{(\thepartno)}}
 \renewcommand{\subpartlabel}{\textbf{\thesubpart.}}
 \renewcommand{\subsubpartlabel}{\textbf{\thesubsubpart)}}

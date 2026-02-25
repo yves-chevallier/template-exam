@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString, Tag
@@ -328,6 +329,10 @@ def _in_solution_mode(context: RenderContext) -> bool:
     if _is_truthy(value):
         return True
 
+    front_matter_value = _front_matter_flag(context, ("solution", "exam.solution", "press.solution"))
+    if _is_truthy(front_matter_value):
+        return True
+
     # Fallback for project solution builds when overrides are not propagated.
     document_path = context.runtime.get("document_path")
     if document_path is not None:
@@ -357,6 +362,10 @@ def _in_compact_mode(context: RenderContext) -> bool:
     if _is_truthy(value):
         return True
 
+    front_matter_value = _front_matter_flag(context, ("compact", "exam.compact", "press.compact"))
+    if _is_truthy(front_matter_value):
+        return True
+
     # Fallback for project light builds where compact mode is generated in a
     # dedicated source directory before front-matter overrides are propagated.
     document_path = context.runtime.get("document_path")
@@ -365,6 +374,40 @@ def _in_compact_mode(context: RenderContext) -> bool:
         if "/light-src/" in path_text or path_text.endswith("-light.md") or ".light." in path_text:
             return True
     return False
+
+
+def _front_matter_flag(context: RenderContext, keys: tuple[str, ...]) -> object:
+    cache_key = "_texsmith_front_matter"
+    cached = context.runtime.get(cache_key)
+    if cached is None:
+        document_path = context.runtime.get("document_path")
+        front_matter: dict[str, object] = {}
+        if document_path is not None:
+            try:
+                from texsmith.adapters.markdown import split_front_matter
+
+                raw = Path(document_path).read_text(encoding="utf-8")
+                front_matter, _ = split_front_matter(raw)
+            except Exception:
+                front_matter = {}
+        context.runtime[cache_key] = front_matter
+        cached = front_matter
+    if not isinstance(cached, dict):
+        return None
+    for key in keys:
+        if "." in key:
+            cursor: object = cached
+            for part in key.split("."):
+                if not isinstance(cursor, dict):
+                    cursor = None
+                    break
+                cursor = cursor.get(part)
+            if cursor is not None:
+                return cursor
+        else:
+            if key in cached:
+                return cached.get(key)
+    return None
 
 
 def _choice_style(context: RenderContext) -> str:
@@ -490,7 +533,15 @@ def _solution_env(
     grid_value: str | None,
     box_value: str | None,
     text_style: str,
+    *,
+    compact_mode: bool,
+    solution_mode: bool,
 ) -> tuple[str, str]:
+    if compact_mode and not solution_mode:
+        return (
+            "\\ifprintanswers\n\\begin{solution}\n",
+            "\\leavevmode\n\\end{solution}\n\\fi\n",
+        )
     if lines_value:
         lines_value = lines_value.strip()
     if grid_value:
@@ -1050,7 +1101,14 @@ def render_solution_admonition(element: Tag, context: RenderContext) -> None:
         if box_match:
             box_value = box_match.group(1)
 
-    begin_env, end_env = _solution_env(lines_value, grid_value, box_value, _text_style(context))
+    begin_env, end_env = _solution_env(
+        lines_value,
+        grid_value,
+        box_value,
+        _text_style(context),
+        compact_mode=_in_compact_mode(context),
+        solution_mode=_in_solution_mode(context),
+    )
 
     content_nodes: list[object] = []
     cursor = element.next_sibling
@@ -1168,7 +1226,14 @@ def render_solution_callouts(element: Tag, context: RenderContext) -> None:
     for img in list(element.find_all("img")):
         _render_images(img, context)
 
-    begin_env, end_env = _solution_env(lines_value, grid_value, box_value, _text_style(context))
+    begin_env, end_env = _solution_env(
+        lines_value,
+        grid_value,
+        box_value,
+        _text_style(context),
+        compact_mode=_in_compact_mode(context),
+        solution_mode=_in_solution_mode(context),
+    )
     body = element.find("div", class_="texsmith-solution")
     title_node = element.find("p", class_="admonition-title")
     if title_node is not None:
