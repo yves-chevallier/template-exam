@@ -384,14 +384,39 @@
 \setlength{\gridsize}{5mm}
 
 \makeatletter
+\newcommand{\texsmithprintpointsnumeric}[2]{%
+  \begingroup
+  \edef\texsmith@tmp{#1}%
+  \if\relax\detokenize{\texsmith@tmp}\relax
+  \else
+    \ifdim\texsmith@tmp pt=0pt\relax
+    \else
+      #2%
+    \fi
+  \fi
+  \endgroup
+}
+\newcommand{\texsmithpointname}[1]{%
+  \begingroup
+  \edef\texsmith@tmp{#1}%
+  \if\relax\detokenize{\texsmith@tmp}\relax
+  \else
+    \ifdim\texsmith@tmp pt=1pt\relax
+      \point@sing
+    \else
+      \point@plur
+    \fi
+  \fi
+  \endgroup
+}
 \newcommand{\ExamQuestionPoints}{%
   \if@placepoints
-    (\thepoints)%
+    \texsmithprintpointsnumeric{\@points}{(\@points\ \texsmithpointname{\@points})}%
   \else
     \@ifundefined{pointsofq@\romannumeral\arabic{question}}{}{%
       \begingroup
         \edef\@points{\pointsofquestion{\arabic{question}}}%
-        (\@points\@pointname)%
+        \texsmithprintpointsnumeric{\@points}{(\@points\ \texsmithpointname{\@points})}%
       \endgroup
     }%
   \fi
