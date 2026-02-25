@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.13"
 
 [[package]]
@@ -1204,8 +1204,8 @@ wheels = [
 
 [[package]]
 name = "texsmith"
-version = "0.2.2.dev9"
-source = { git = "https://github.com/yves-chevallier/texsmith.git#b83b8ea7d2411487e57c7234dfabde43ab37a8d0" }
+version = "0.2.2"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "cairosvg" },
@@ -1230,6 +1230,10 @@ dependencies = [
     { name = "rich" },
     { name = "typer" },
     { name = "unicodeblocks" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6c/60/23ff748199603d984f7095f0fcc09fbe1aa6cf59da090f73e53d9234f7bd/texsmith-0.2.2.tar.gz", hash = "sha256:aa32eb52c97b9b2896291ec08ef844b16b76159713f6284e5b4b2a5b0463e6e2", size = 6402819, upload-time = "2026-02-24T16:18:41.626Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0e/6f/c85290c16ce2d5bf5e70a4efa9acaf7c09cb2dd0b431942ed3056c5af808/texsmith-0.2.2-py3-none-any.whl", hash = "sha256:7da9b6e67959e0fe388a1947b052b93b24f75c0f4afed244e174196696572932", size = 517021, upload-time = "2026-02-24T16:18:39.872Z" },
 ]
 
 [[package]]
@@ -1257,13 +1261,13 @@ docs = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "texsmith", git = "https://github.com/yves-chevallier/texsmith.git" }]
+requires-dist = [{ name = "texsmith", specifier = ">=0.2.2,<1.0" }]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.0" },
     { name = "ruff", specifier = ">=0.14.1" },
-    { name = "texsmith", git = "https://github.com/yves-chevallier/texsmith.git" },
+    { name = "texsmith" },
 ]
 docs = [
     { name = "mike", specifier = ">=2.1.2" },
