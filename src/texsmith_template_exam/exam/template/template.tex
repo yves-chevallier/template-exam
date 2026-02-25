@@ -203,7 +203,7 @@
 \renewcommand{\solutiontitle}{}
 \renewenvironment{TheSolution}%
   {%
-    \vspace{\parskip}%
+    \par\addvspace{1em}\noindent%
     \leftskip=0pt
     \rightskip=0pt
     \begingroup
@@ -215,6 +215,7 @@
     \end{examanswerbar}%
     \unskip
     \endgroup
+    \par\addvspace{1em}%
   }%
 \CorrectChoiceEmphasis{\bfseries}
 \@ifpackageloaded{tcolorbox}{}{%
@@ -231,6 +232,8 @@
   overlay first={\draw[line width=2pt,black] ([yshift=1mm]frame.north west) -- ([yshift=-1mm]frame.south west);},
   overlay middle={\draw[line width=2pt,black] ([yshift=1mm]frame.north west) -- ([yshift=-1mm]frame.south west);},
   overlay last={\draw[line width=2pt,black] ([yshift=1mm]frame.north west) -- ([yshift=-1mm]frame.south west);},
+  before skip=\parskip,
+  after skip=\parskip,
   left=6pt,
   right=0pt,
   top=0pt,

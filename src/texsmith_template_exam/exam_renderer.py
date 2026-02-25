@@ -13,6 +13,7 @@ from texsmith.adapters.handlers._helpers import coerce_attribute, mark_processed
 from texsmith.adapters.handlers.admonitions import gather_classes
 from texsmith.adapters.handlers.blocks import _prepare_rich_text_content
 from texsmith.adapters.handlers.code import _is_ascii_art, _resolve_code_engine
+from texsmith.adapters.handlers.inline import _payload_is_block_environment
 from texsmith.adapters.handlers.media import render_images as _render_images
 from texsmith.core.callouts import DEFAULT_CALLOUTS, merge_callouts, normalise_callouts
 from texsmith.core.context import RenderContext
@@ -537,8 +538,14 @@ def _solution_env(
     compact_mode: bool,
     solution_mode: bool,
 ) -> tuple[str, str]:
+    def _wrap_solution_spacing(begin_env: str, end_env: str) -> tuple[str, str]:
+        if solution_mode:
+            begin_env = "\\par\\smallskip\n" + begin_env
+            end_env = end_env + "\\par\\smallskip\n"
+        return begin_env, end_env
+
     if compact_mode and not solution_mode:
-        return (
+        return _wrap_solution_spacing(
             "\\ifprintanswers\n\\begin{solution}\n",
             "\\leavevmode\n\\end{solution}\n\\fi\n",
         )
@@ -562,23 +569,22 @@ def _solution_env(
                     f"{box_prefix}\\fbox{{\\parbox[c][{height}][c]{{{width}}}{{\\rule{{0pt}}{{{height}}}}}}}{box_suffix}%\n"
                     "\\vspace{1em}%\n\\fi\n"
                 )
-                return begin_env, end_env
+                return _wrap_solution_spacing(begin_env, end_env)
             if width:
                 begin_env = f"\\begin{{solutionorbox}}[{width}]\n"
                 end_env = "\\leavevmode\n\\end{solutionorbox}\n"
-                return begin_env, end_env
+                return _wrap_solution_spacing(begin_env, end_env)
 
     if grid_value and grid_value.isdigit():
         grid_value = f"{grid_value}\\linefillheight"
     if grid_value:
         begin_env = f"\\begin{{solutionorgrid}}[{grid_value}]\n"
         end_env = "\\leavevmode\n\\end{solutionorgrid}\n"
-        return begin_env, end_env
+        return _wrap_solution_spacing(begin_env, end_env)
     if not lines_value:
-        return (
-            "\\ifprintanswers\n\\begin{solution}\n",
-            "\\leavevmode\n\\end{solution}\n\\fi\n",
-        )
+        begin_env = "\\ifprintanswers\n\\begin{solution}\n"
+        end_env = "\\leavevmode\n\\end{solution}\n\\fi\n"
+        return _wrap_solution_spacing(begin_env, end_env)
 
     if lines_value.lower() == "fill":
         if text_style == "lines":
@@ -587,29 +593,114 @@ def _solution_env(
             filler = "\\makeemptybox{\\stretch{1}}"
         else:
             filler = "\\fillwithdottedlines{\\stretch{1}}"
-        return (
-            "\\ifprintanswers\n\\begin{solution}\n",
-            f"\\leavevmode\n\\end{{solution}}\n\\else\n{filler}\n\\fi\n",
-        )
+        begin_env = "\\ifprintanswers\n\\begin{solution}\n"
+        end_env = f"\\leavevmode\n\\end{{solution}}\n\\else\n{filler}\n\\fi\n"
+        return _wrap_solution_spacing(begin_env, end_env)
 
     if text_style == "lines":
         height = _expand_lines_value(lines_value, unit_macro="linefillheight")
-        return (
-            f"\\begin{{solutionorlines}}[{height}]\n",
-            "\\leavevmode\n\\end{solutionorlines}\n",
-        )
+        begin_env = f"\\begin{{solutionorlines}}[{height}]\n"
+        end_env = "\\leavevmode\n\\end{solutionorlines}\n"
+        return _wrap_solution_spacing(begin_env, end_env)
     if text_style == "box":
         height = _expand_lines_value(lines_value, unit_macro="linefillheight")
-        return (
-            f"\\begin{{solutionorbox}}[{height}]\n",
-            "\\leavevmode\n\\end{solutionorbox}\n",
-        )
+        begin_env = f"\\begin{{solutionorbox}}[{height}]\n"
+        end_env = "\\leavevmode\n\\end{solutionorbox}\n"
+        return _wrap_solution_spacing(begin_env, end_env)
 
     height = _expand_lines_value(lines_value, unit_macro="dottedlinefillheight")
-    return (
-        f"\\begin{{solutionordottedlines}}[{height}]\n",
-        "\\leavevmode\n\\end{solutionordottedlines}\n",
-    )
+    begin_env = f"\\begin{{solutionordottedlines}}[{height}]\n"
+    end_env = "\\leavevmode\n\\end{solutionordottedlines}\n"
+    return _wrap_solution_spacing(begin_env, end_env)
+
+
+def _convert_math_scripts(container: Tag) -> None:
+    for script in list(container.find_all("script")):
+        type_attr = coerce_attribute(script.get("type"))
+        if type_attr is None or not type_attr.startswith("math/tex"):
+            continue
+        payload = script.get_text(strip=False) or ""
+        payload = payload.strip()
+        is_display = "mode=display" in type_attr
+
+        if not payload:
+            node = NavigableString("")
+        elif is_display:
+            if _payload_is_block_environment(payload):
+                node = NavigableString(f"\n{payload}\n")
+            else:
+                node = NavigableString(f"\n$$\n{payload}\n$$\n")
+        else:
+            node = NavigableString(f"${payload}$")
+
+        script.replace_with(mark_processed(node))
+
+
+@renders(
+    "div",
+    phase=RenderPhase.PRE,
+    priority=40,
+    name="solution_math_blocks",
+    nestable=False,
+    auto_mark=False,
+)
+def render_solution_math_blocks(element: Tag, _context: RenderContext) -> None:
+    """Convert math script tags early inside solution blocks."""
+    classes = gather_classes(element.get("class"))
+    if "texsmith-solution" not in classes:
+        return
+    _convert_math_scripts(element)
+
+
+@renders(
+    "script",
+    phase=RenderPhase.PRE,
+    priority=70,
+    name="solution_math_scripts",
+    nestable=False,
+    auto_mark=False,
+)
+def render_solution_math_scripts(element: Tag, _context: RenderContext) -> None:
+    """Ensure math scripts inside solution blocks survive paragraph flattening."""
+    type_attr = coerce_attribute(element.get("type"))
+    if type_attr is None or not type_attr.startswith("math/tex"):
+        return
+    payload = element.get_text(strip=False) or ""
+    payload = payload.strip()
+    is_display = "mode=display" in type_attr
+
+    if not payload:
+        node = NavigableString("")
+    elif is_display:
+        if _payload_is_block_environment(payload):
+            node = NavigableString(f"\n{payload}\n")
+        else:
+            node = NavigableString(f"\n$$\n{payload}\n$$\n")
+    else:
+        node = NavigableString(f"${payload}$")
+
+    parent = element.parent
+    if parent is not None and getattr(parent, "name", None) == "p":
+        parent.attrs["data-texsmith-latex"] = "true"
+
+    if element.parent is None:
+        return
+    element.replace_with(mark_processed(node))
+
+
+@renders(
+    "p",
+    phase=RenderPhase.POST,
+    priority=95,
+    name="solution_math_paragraphs",
+    nestable=False,
+)
+def render_solution_math_paragraphs(element: Tag, _context: RenderContext) -> None:
+    """Preserve math script payloads inside paragraphs before they are flattened."""
+    if not element.find("script"):
+        return
+    _convert_math_scripts(element)
+    element.attrs["data-texsmith-latex"] = "true"
 
 
 def _split_fenced_segments(code_text: str) -> list[tuple[str, str | None, str]]:
@@ -1081,6 +1172,10 @@ def render_solution_admonition(element: Tag, context: RenderContext) -> None:
     if element.get("class"):
         return
 
+    _convert_math_scripts(element)
+    for para in element.find_all("p"):
+        para.attrs["data-texsmith-latex"] = "true"
+
     raw_text = element.get_text(strip=True)
     match = _SOLUTION_PATTERN.match(raw_text)
     if not match:
@@ -1140,6 +1235,9 @@ def render_solution_admonition(element: Tag, context: RenderContext) -> None:
             code_text = pre.get_text()
             html = render_markdown(code_text, exam_markdown_extensions()).html
             soup = BeautifulSoup(html, "html.parser")
+            _convert_math_scripts(soup)
+            for para in soup.find_all("p"):
+                para.attrs["data-texsmith-latex"] = "true"
             replacement_nodes = list(soup.body.contents) if soup.body else list(soup.contents)
             for new_node in replacement_nodes:
                 candidate.insert_before(new_node)
@@ -1189,6 +1287,10 @@ def render_solution_callouts(element: Tag, context: RenderContext) -> None:
     )
     if not is_solution:
         return
+
+    _convert_math_scripts(element)
+    for para in element.find_all("p"):
+        para.attrs["data-texsmith-latex"] = "true"
 
     element.name = "div"
     element.attrs["data-callout-skip"] = "true"
@@ -1483,6 +1585,8 @@ def register(renderer: object) -> None:
     register_fn = getattr(renderer, "register", None)
     if callable(register_fn):
         register_fn(set_exam_callouts)
+        register_fn(render_solution_math_blocks)
+        register_fn(render_solution_math_paragraphs)
         register_fn(render_fillin_placeholders)
         register_fn(render_table_fillin_cells)
         register_fn(strip_fenced_code_in_blocks)

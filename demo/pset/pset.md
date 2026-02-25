@@ -19,16 +19,25 @@ press:
       right: 2.4cm
       bottom: 2.4cm
     marks: false
-exam:
-  course: Analysis IV
-  titlepage: minimal
+
+course: Analysis IV
+titlepage: minimal
+rules:
+  - Write your **last name** and **first name** on the first page.
+  - Write **legibly**, using a pen or a soft pencil.
+  - Answer the questions in the appropriate spaces.
+  - Review all your answers before handing in your work.
+  - Turn in all pages of this written assignment.
+  - Answers on scratch paper **are not accepted**.
+  - No means of communication are allowed.
+
 ---
 
 ## -
 
 Let $f : \mathbb{R} \to \mathbb{R}$ be the continuous function defined on $\mathbb{R}^*$ by $f(t) = \frac{\sin t}{t}$.
 
-### -
+### - { points=5 }
 
 Compute
 
@@ -87,13 +96,13 @@ $$
     \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{+\infty} \frac{\sin t}{t} e^{-ixt} \, dt
     =
     \begin{cases}
-    \sqrt{\frac{\pi}{2}} & \text{if } |x| < 1, [6pt]
-    \frac{1}{2}\sqrt{\frac{\pi}{2}} & \text{if } |x| = 1, [6pt]
+    \sqrt{\frac{\pi}{2}} & \text{if } |x| < 1, \\[6pt]
+    \frac{1}{2}\sqrt{\frac{\pi}{2}} & \text{if } |x| = 1, \\[6pt]
     0 & \text{if } |x| > 1.
     \end{cases}
     $$
 
-### -
+### - { points=3 }
 
 Explain why the result of Theorem 15.2 (i) does not apply here.
 
@@ -126,7 +135,7 @@ $$
 \int_{-\infty}^{+\infty} |f(t)| \, dt < +\infty.
 $$
 
-### -
+### - { points=10 }
 
 Compute
 
@@ -160,7 +169,8 @@ $$
     f(x),
     \qquad x \in \mathbb{R}.
     $$
-### -
+
+### - { points=5 }
 
 Compute for every integer $n \ge 2$:
 
@@ -175,7 +185,7 @@ $$
     $$
     H_n(x)=
     \begin{cases}
-    \dfrac{x^{n-1}}{(n-1)!} & \text{if } x>0, [6pt]
+    \dfrac{x^{n-1}}{(n-1)!} & \text{if } x>0, \\[6pt]
     0 & \text{if } x\le 0.
     \end{cases}
     $$
@@ -229,13 +239,14 @@ $$
     $$
     H_{n+1}(x)=
     \begin{cases}
-    \dfrac{x^{n}}{n!} & \text{if } x>0, [6pt]
+    \dfrac{x^{n}}{n!} & \text{if } x>0, \\[6pt]
     0 & \text{if } x\le 0,
     \end{cases}
     $$
 
     which completes the proof.
-## -
+
+## - { points=5 }
 
 Let $f : \mathbb{R} \to \mathbb{R}$ be the function defined by
 $$
@@ -259,7 +270,7 @@ Compute $f * f$.
     e^{-\frac{x^2}{2}} \sqrt{\frac{\pi}{2}}.
     $$
 
-## -
+## - { points=10 }
 
 Find a solution of
 
