@@ -132,6 +132,13 @@ type = "list"
 sources = ["exam.rules", "rules"]
 description = "List of rules to display on the cover page."
 
+[latex.template.attributes.logo]
+default = ""
+type = "any"
+allow_empty = true
+sources = ["exam.logo", "logo"]
+description = "Logo configuration (builtin key, none, or mapping with file/position)."
+
 [latex.template.attributes.solution]
 default = false
 type = "boolean"

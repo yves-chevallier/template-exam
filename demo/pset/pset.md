@@ -7,19 +7,6 @@ problem-label: Exercise
 compact: true
 next_page_advice: false
 language: en
-typesetting:
-  paragraph:
-    indent: none
-    spacing: 1.1em
-press:
-  paper:
-    margin:
-      top: 12mm
-      left: 2.4cm
-      right: 2.4cm
-      bottom: 2.4cm
-    marks: false
-
 course: Analysis IV
 titlepage: minimal
 rules:

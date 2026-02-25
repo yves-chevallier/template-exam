@@ -51,7 +51,7 @@ The longest river in the world is the:
 - [ ] Congo River
 - [ ] Mekong River
 - [ ] Ganges River
-- [ ] Nile River
+- [x] Nile River
 
 ## -
 
@@ -80,12 +80,7 @@ Name each continent:
 
 !!! solution { lines=2 }
 
-    1. Africa
-    2. Antarctica
-    3. Asia
-    4. Europe
-    5. North America
-    6. Australia
+    Africa, Antarctica, Asia, Europe, North America, Australia
 
 ## -
 

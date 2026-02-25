@@ -8,6 +8,50 @@
 \BLOCK{ set titlepage_minimal = titlepage_raw == 'minimal' }
 \BLOCK{ set fillin_style_raw = fillin_style|default('line')|string|lower|trim }
 \BLOCK{ set fillin_style = fillin_style_raw if fillin_style_raw in ['line', 'dotted'] else 'line' }
+\BLOCK{ set logo_value = logo|default(none) }
+\BLOCK{ if exam is defined and exam }
+  \BLOCK{ set logo_value = exam.get('logo', logo_value) }
+\BLOCK{ endif }
+\BLOCK{ set logo_disabled = false }
+\BLOCK{ set logo_builtin = '' }
+\BLOCK{ set logo_file = '' }
+\BLOCK{ set logo_layout_key = 'minimal' if titlepage_minimal else 'cover' }
+\BLOCK{ set logo_defaults = {
+  'minimal': {'top': '10mm', 'left': '24mm', 'height': '1.45cm'},
+  'cover': {'top': '10mm', 'left': '10mm', 'height': '1.8cm'}
+} }
+\BLOCK{ set logo_layout_default = logo_defaults.get(logo_layout_key, {}) }
+\BLOCK{ if logo_value is mapping }
+  \BLOCK{ set logo_base = logo_value }
+  \BLOCK{ set logo_layout = logo_value.get(logo_layout_key, {}) if logo_value.get(logo_layout_key) is mapping else {} }
+  \BLOCK{ set logo_builtin = logo_layout.get('builtin', logo_base.get('builtin', '')) }
+  \BLOCK{ set logo_file = logo_layout.get('file', logo_base.get('file', '')) }
+  \BLOCK{ set logo_top = logo_layout.get('top', logo_base.get('top', logo_layout_default.get('top', ''))) }
+  \BLOCK{ set logo_left = logo_layout.get('left', logo_base.get('left', logo_layout_default.get('left', ''))) }
+  \BLOCK{ set logo_height = logo_layout.get('height', logo_base.get('height', logo_layout_default.get('height', ''))) }
+\BLOCK{ if not logo_builtin and not logo_file }
+  \BLOCK{ set logo_disabled = true }
+\BLOCK{ endif }
+\BLOCK{ elif logo_value is string }
+  \BLOCK{ set logo_text = logo_value|trim|lower }
+  \BLOCK{ if logo_text in ['none', 'false', 'off', 'no'] }
+    \BLOCK{ set logo_disabled = true }
+  \BLOCK{ elif logo_text in ['heig-vd', 'heigvd', 'heig_vd'] }
+    \BLOCK{ set logo_builtin = 'heig-vd' }
+  \BLOCK{ elif logo_text }
+    \BLOCK{ set logo_file = logo_value|trim }
+  \BLOCK{ endif }
+  \BLOCK{ set logo_top = logo_layout_default.get('top', '') }
+  \BLOCK{ set logo_left = logo_layout_default.get('left', '') }
+  \BLOCK{ set logo_height = logo_layout_default.get('height', '') }
+\BLOCK{ if not logo_text }
+  \BLOCK{ set logo_disabled = true }
+\BLOCK{ endif }
+\BLOCK{ elif logo_value is boolean }
+  \BLOCK{ if not logo_value }
+    \BLOCK{ set logo_disabled = true }
+  \BLOCK{ endif }
+\BLOCK{ endif }
 \BLOCK{ set fillin_solution_underline_value = fillin_solution_underline|default(false) }
 \BLOCK{ if exam is defined and exam }
   \BLOCK{ set fillin_solution_underline_value = exam.get('fillin_solution_underline', exam.get('fillin-solution-underline', fillin_solution_underline_value)) }
@@ -89,8 +133,20 @@
 \setlength{\parskip}{1.2em}
 \setlength{\parindent}{0pt}
 \BLOCK{ endif }
+\BLOCK{ if not logo_disabled and logo_builtin == 'heig-vd' }
 \usepackage{heiglogo}
+\BLOCK{ endif }
 \usepackage{xparse}
+
+\newcommand{\ExamLogoCustom}[4]{%
+  \AddToShipoutPictureFG*{%
+    \AtPageUpperLeft{%
+      \put(#2,-#3){\includegraphics[height=#4]{#1}}%
+    }%
+  }%
+  \vspace*{-\baselineskip}%
+}
+\newcommand{\ExamLogoSpacer}{\vspace*{-\baselineskip}}
 
 % Increase table row height only when a row contains at least one \fillin.
 \newcount\texsmithtabledepth
@@ -574,7 +630,15 @@
 \makeatletter
 \BLOCK{ if titlepage_minimal }
 \def\@maketitle{%
-  \logo[top=10mm,left=24mm,height=1.45cm]
+  \BLOCK{ if not logo_disabled }
+    \BLOCK{ if logo_builtin == 'heig-vd' }
+  \logo[top=\VAR{logo_top},left=\VAR{logo_left},height=\VAR{logo_height}]
+    \BLOCK{ elif logo_file }
+  \ExamLogoCustom{\VAR{logo_file}}{\VAR{logo_left}}{\VAR{logo_top}}{\VAR{logo_height}}
+    \BLOCK{ endif }
+  \BLOCK{ else }
+  \ExamLogoSpacer
+  \BLOCK{ endif }
   \begingroup
   \vskip \dimexpr0pt-\headheight-\headsep-\topskip-3mm\relax%
   \noindent%
@@ -616,7 +680,15 @@
 \BLOCK{ else }
 \def\@maketitle{%
   \newpage
-  \logo[top=10mm,height=1.8cm]
+  \BLOCK{ if not logo_disabled }
+    \BLOCK{ if logo_builtin == 'heig-vd' }
+  \logo[top=\VAR{logo_top},left=\VAR{logo_left},height=\VAR{logo_height}]
+    \BLOCK{ elif logo_file }
+  \ExamLogoCustom{\VAR{logo_file}}{\VAR{logo_left}}{\VAR{logo_top}}{\VAR{logo_height}}
+    \BLOCK{ endif }
+  \BLOCK{ else }
+  \ExamLogoSpacer
+  \BLOCK{ endif }
   \AddToShipoutPictureFG*{%
     \AtPageUpperLeft{%
       \put(1cm,-2.8cm){%
