@@ -535,8 +535,8 @@ def _solution_env(
     box_value: str | None,
     text_style: str,
     *,
-    compact_mode: bool,
-    solution_mode: bool,
+    compact_mode: bool = False,
+    solution_mode: bool = False,
 ) -> tuple[str, str]:
     def _wrap_solution_spacing(begin_env: str, end_env: str) -> tuple[str, str]:
         if solution_mode:
