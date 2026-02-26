@@ -4,26 +4,20 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
+import sys as _sys
 import re
-import subprocess
 from typing import Any
-import warnings
 
 from texsmith.adapters.latex.renderer import LaTeXRenderer
 from texsmith.adapters.markdown import render_markdown
 from texsmith.core.templates.base import WrappableTemplate
 
+from texsmith_template_exam.exam import version as exam_version
 from texsmith_template_exam.markdown import exam_markdown_extensions
 
-import sys as _sys
 
-
-_RENDERER: LaTeXRenderer | None = None
-_GIT_VERSION: str | None = None
-_GIT_VERSION_READY = False
-
-# Allow `from texsmith_template_exam.exam import __init__ as exam_mod` in tests.
 __init__ = _sys.modules[__name__]
 
 
@@ -34,10 +28,12 @@ def _markdown_to_latex(value: Any) -> str:
     if not text.strip():
         return text
     html = render_markdown(text, exam_markdown_extensions()).html
-    global _RENDERER
-    if _RENDERER is None:
-        _RENDERER = LaTeXRenderer(copy_assets=False, convert_assets=False)
-    return _RENDERER.render(html).strip()
+    return _get_renderer().render(html).strip()
+
+
+@lru_cache(maxsize=1)
+def _get_renderer() -> LaTeXRenderer:
+    return LaTeXRenderer(copy_assets=False, convert_assets=False)
 
 
 def _format_exam_date(value: Any, lang: str = "fr") -> str:
@@ -98,64 +94,7 @@ def _format_exam_date(value: Any, lang: str = "fr") -> str:
 
 
 def _format_exam_version(value: Any) -> str:
-    if value is None:
-        return ""
-    text = str(value).strip()
-    if not text:
-        return ""
-    if text.lower() != "git":
-        return text
-
-    return _get_git_version()
-
-
-def _get_git_version() -> str:
-    global _GIT_VERSION_READY, _GIT_VERSION
-    if _GIT_VERSION_READY:
-        return _GIT_VERSION or ""
-    _GIT_VERSION_READY = True
-    _GIT_VERSION = ""
-
-    repo_root = _resolve_git_root()
-    if repo_root is None:
-        warnings.warn(
-            "version=git requested but no git repository was found; "
-            "cannot resolve git version."
-        )
-        return ""
-
-    describe = _run_git(repo_root, ["describe", "--tags", "--dirty"])
-    if describe:
-        _GIT_VERSION = describe
-        return describe
-
-    short = _run_git(repo_root, ["rev-parse", "--short=6", "HEAD"])
-    if short:
-        _GIT_VERSION = short
-        return short
-
-    warnings.warn("version=git requested but git metadata could not be read.")
-    return ""
-
-
-def _resolve_git_root() -> Path | None:
-    repo = _run_git(Path(__file__).resolve().parent, ["rev-parse", "--show-toplevel"])
-    if not repo:
-        return None
-    return Path(repo)
-
-
-def _run_git(repo_root: Path, args: list[str]) -> str:
-    try:
-        result = subprocess.run(
-            ["git", "-C", str(repo_root), *args],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return ""
-    return result.stdout.strip()
+    return exam_version.format_exam_version(value)
 
 
 class Template(WrappableTemplate):

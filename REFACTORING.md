@@ -27,9 +27,9 @@
 - [x] Garder `exam_renderer.py` comme orchestrateur + `register()`.
 
 ## Phase 5 — Assainissement des effets de bord
-- [ ] Rendre `exam_markdown_extensions()` pure (ne pas muter `DEFAULT_MARKDOWN_EXTENSIONS`).
-- [ ] Encapsuler les caches globaux (`_RENDERER`, `_GIT_VERSION`) ou les déplacer dans un module dédié.
-- [ ] Vérifier la compatibilité avec les usages existants.
+- [x] Rendre `exam_markdown_extensions()` pure (ne pas muter `DEFAULT_MARKDOWN_EXTENSIONS`).
+- [x] Encapsuler les caches globaux (`_RENDERER`, `_GIT_VERSION`) ou les déplacer dans un module dédié.
+- [x] Vérifier la compatibilité avec les usages existants.
 
 ## Phase 6 — Couche de compatibilité texsmith
 - [ ] Créer `src/texsmith_template_exam/exam/texsmith_compat.py` pour isoler les appels aux helpers internes.
