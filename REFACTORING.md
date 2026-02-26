@@ -20,11 +20,11 @@
 - [x] Mettre à jour les appels dans les handlers.
 
 ## Phase 4 — Découpage par domaine
-- [ ] Extraire le rendu des headings vers `src/texsmith_template_exam/exam/headings.py`.
-- [ ] Extraire la logique solutions/admonitions/callouts vers `src/texsmith_template_exam/exam/solutions.py`.
-- [ ] Extraire la logique `fenced code` vers `src/texsmith_template_exam/exam/fenced_code.py`.
-- [ ] Extraire la logique `checkboxes` vers `src/texsmith_template_exam/exam/checkboxes.py`.
-- [ ] Garder `exam_renderer.py` comme orchestrateur + `register()`.
+- [x] Extraire le rendu des headings vers `src/texsmith_template_exam/exam/headings.py`.
+- [x] Extraire la logique solutions/admonitions/callouts vers `src/texsmith_template_exam/exam/solutions.py`.
+- [x] Extraire la logique `fenced code` vers `src/texsmith_template_exam/exam/fenced_code.py`.
+- [x] Extraire la logique `checkboxes` vers `src/texsmith_template_exam/exam/checkboxes.py`.
+- [x] Garder `exam_renderer.py` comme orchestrateur + `register()`.
 
 ## Phase 5 — Assainissement des effets de bord
 - [ ] Rendre `exam_markdown_extensions()` pure (ne pas muter `DEFAULT_MARKDOWN_EXTENSIONS`).

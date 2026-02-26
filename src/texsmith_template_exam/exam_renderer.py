@@ -20,8 +20,28 @@ from texsmith.core.context import RenderContext
 from texsmith.core.rules import DOCUMENT_NODE, RenderPhase, renders
 from texsmith.fonts.scripts import render_moving_text
 
+from texsmith_template_exam.exam.checkboxes import render_exam_checkboxes as _render_exam_checkboxes
 from texsmith_template_exam.exam.fillin import build_fillin_latex, compute_fillin_width
+from texsmith_template_exam.exam.fenced_code import (
+    strip_fenced_code_in_blocks as _strip_fenced_code_in_blocks,
+    strip_fenced_code_in_pre as _strip_fenced_code_in_pre,
+)
+from texsmith_template_exam.exam.headings import (
+    close_open_parts as _close_open_parts,
+    configure_heading_patterns as _configure_heading_patterns,
+    render_exam_headings as _render_exam_headings,
+)
 from texsmith_template_exam.exam.mode import in_compact_mode, in_solution_mode
+from texsmith_template_exam.exam.solutions import (
+    promote_solution_admonitions as _promote_solution_admonitions,
+    render_exam_images as _render_exam_images,
+    render_solution_admonition as _render_solution_admonition,
+    render_solution_callouts as _render_solution_callouts,
+    render_solution_div_admonitions as _render_solution_div_admonitions,
+    render_solution_math_blocks as _render_solution_math_blocks,
+    render_solution_math_paragraphs as _render_solution_math_paragraphs,
+    render_solution_math_scripts as _render_solution_math_scripts,
+)
 from texsmith_template_exam.markdown import exam_markdown_extensions
 from texsmith_template_exam.exam.utils import (
     choice_label,
@@ -212,6 +232,11 @@ _BOX_PATTERN = re.compile(r"\bbox\s*=\s*([^\s,}]+)\b")
 _ATTRS_BLOCK_PATTERN = re.compile(r"\\?\{(?P<attrs>[^}]*)\\?\}\s*$")
 _HEADING_DASH_ATTRS_PATTERN = re.compile(r"^\s*-\s*\\?\{(?P<attrs>.*)\\?\}\s*$")
 
+_configure_heading_patterns(
+    attrs_block_pattern=_ATTRS_BLOCK_PATTERN,
+    heading_dash_attrs_pattern=_HEADING_DASH_ATTRS_PATTERN,
+)
+
 
 def _exam_style(context: RenderContext) -> dict[str, object]:
     overrides = context.runtime.get("template_overrides")
@@ -370,10 +395,7 @@ def _convert_math_scripts(container: Tag) -> None:
 )
 def render_solution_math_blocks(element: Tag, _context: RenderContext) -> None:
     """Convert math script tags early inside solution blocks."""
-    classes = gather_classes(element.get("class"))
-    if "texsmith-solution" not in classes:
-        return
-    _convert_math_scripts(element)
+    _render_solution_math_blocks(element, _context)
 
 
 @renders(
@@ -386,30 +408,7 @@ def render_solution_math_blocks(element: Tag, _context: RenderContext) -> None:
 )
 def render_solution_math_scripts(element: Tag, _context: RenderContext) -> None:
     """Ensure math scripts inside solution blocks survive paragraph flattening."""
-    type_attr = coerce_attribute(element.get("type"))
-    if type_attr is None or not type_attr.startswith("math/tex"):
-        return
-    payload = element.get_text(strip=False) or ""
-    payload = payload.strip()
-    is_display = "mode=display" in type_attr
-
-    if not payload:
-        node = NavigableString("")
-    elif is_display:
-        if _payload_is_block_environment(payload):
-            node = NavigableString(f"\n{payload}\n")
-        else:
-            node = NavigableString(f"\n$$\n{payload}\n$$\n")
-    else:
-        node = NavigableString(f"${payload}$")
-
-    parent = element.parent
-    if parent is not None and getattr(parent, "name", None) == "p":
-        parent.attrs["data-texsmith-latex"] = "true"
-
-    if element.parent is None:
-        return
-    element.replace_with(mark_processed(node))
+    _render_solution_math_scripts(element, _context)
 
 
 @renders(
@@ -421,10 +420,7 @@ def render_solution_math_scripts(element: Tag, _context: RenderContext) -> None:
 )
 def render_solution_math_paragraphs(element: Tag, _context: RenderContext) -> None:
     """Preserve math script payloads inside paragraphs before they are flattened."""
-    if not element.find("script"):
-        return
-    _convert_math_scripts(element)
-    element.attrs["data-texsmith-latex"] = "true"
+    _render_solution_math_paragraphs(element, _context)
 
 
 def _split_fenced_segments(code_text: str) -> list[tuple[str, str | None, str]]:
@@ -655,19 +651,7 @@ def render_table_fillin_cells(element: Tag, context: RenderContext) -> None:
 )
 def strip_fenced_code_in_pre(element: Tag, context: RenderContext) -> None:
     """Strip ``` fences from preformatted code blocks when present."""
-    if element is None or not hasattr(element, "find"):
-        return
-    code_element = element.find("code")
-    if code_element is None:
-        return
-    segments = _split_fenced_block(code_element.get_text(strip=False))
-    if not segments:
-        return
-    latex = _render_fenced_segments(segments, context)
-    if not latex:
-        return
-    context.suppress_children(element)
-    element.replace_with(mark_processed(NavigableString(latex)))
+    _strip_fenced_code_in_pre(element, context)
 
 
 @renders(
@@ -679,23 +663,7 @@ def strip_fenced_code_in_pre(element: Tag, context: RenderContext) -> None:
 )
 def strip_fenced_code_in_blocks(element: Tag, context: RenderContext) -> None:
     """Strip ``` fences from highlighted code blocks before rendering."""
-    if element is None or not hasattr(element, "get"):
-        return
-    classes = element.get("class") or []
-    if "highlight" not in classes and "codehilite" not in classes:
-        return
-
-    code_element = element.find("code")
-    if code_element is None:
-        return
-    segments = _split_fenced_block(code_element.get_text(strip=False))
-    if not segments:
-        return
-    latex = _render_fenced_segments(segments, context)
-    if not latex:
-        return
-    context.suppress_children(element)
-    element.replace_with(mark_processed(NavigableString(latex)))
+    _strip_fenced_code_in_blocks(element, context)
 
 
 @renders(
@@ -708,77 +676,7 @@ def strip_fenced_code_in_blocks(element: Tag, context: RenderContext) -> None:
 )
 def render_exam_checkboxes(element: Tag, context: RenderContext) -> None:
     """Render task lists as exam.cls checkboxes."""
-    if element.name != "ul":
-        return
-
-    _prepare_rich_text_content(element, context)
-
-    items: list[tuple[bool, str]] = []
-    has_checkbox = False
-
-    for li in element.find_all("li", recursive=False):
-        if li.find(["ul", "ol"]):
-            return
-
-        checkbox_input = li.find("input", attrs={"type": "checkbox"})
-        if checkbox_input is not None:
-            is_checked = checkbox_input.has_attr("checked")
-            checkbox_input.extract()
-            text = li.get_text(strip=False).strip()
-            items.append((is_checked, text))
-            has_checkbox = True
-            continue
-
-        text = li.get_text(strip=False).strip()
-        if text.startswith("[ ]"):
-            items.append((False, text[3:].strip()))
-            has_checkbox = True
-        elif text.startswith("[x]") or text.startswith("[X]"):
-            items.append((True, text[3:].strip()))
-            has_checkbox = True
-        else:
-            items.append((False, text))
-
-    if not has_checkbox:
-        return
-
-    choice_style = _choice_style(context)
-    if choice_style == "checkbox":
-        lines = ["\\begin{samepage}", "\\begin{columen}[5]", "\\begin{checkboxes}"]
-    else:
-        lines = ["\\begin{samepage}", "\\begin{columen}[5]", "\\begin{choices}"]
-    show_answerline = not in_compact_mode(context)
-    correct_labels: list[str] = []
-    for index, (checked, text) in enumerate(items):
-        if checked:
-            lines.append(f"\\CorrectChoice {text}")
-            correct_labels.append(choice_label(index))
-        else:
-            lines.append(f"\\choice {text}")
-    if choice_style == "checkbox":
-        lines.append("\\end{checkboxes}")
-        lines.append("\\end{columen}")
-        if show_answerline:
-            if correct_labels:
-                lines.append(
-                    f"\\ifprintanswers\\answerline[{', '.join(correct_labels)}]\\else\\answerline\\fi"
-                )
-            else:
-                lines.append("\\answerline")
-        lines.append("\\end{samepage}")
-    else:
-        lines.append("\\end{choices}")
-        lines.append("\\end{columen}")
-        if show_answerline:
-            if correct_labels:
-                lines.append(
-                    f"\\ifprintanswers\\answerline[{', '.join(correct_labels)}]\\else\\answerline\\fi"
-                )
-            else:
-                lines.append("\\answerline")
-        lines.append("\\end{samepage}")
-
-    element.replace_with(mark_processed(NavigableString("\n".join(lines) + "\n")))
+    _render_exam_checkboxes(element, context)
 
 
 @renders(
@@ -828,7 +726,7 @@ def render_exam_fillin(element: Tag, context: RenderContext) -> None:
 )
 def render_exam_images(element: Tag, context: RenderContext) -> None:
     """Ensure images inside solution/admonition blocks render in LaTeX."""
-    _render_images(element, context)
+    _render_exam_images(element, context)
 
 
 @renders(
@@ -885,99 +783,7 @@ def render_exam_image_paragraphs(element: Tag, context: RenderContext) -> None:
 )
 def render_solution_admonition(element: Tag, context: RenderContext) -> None:
     """Convert solution directives into exam.cls solution environments."""
-    if element.get("class"):
-        return
-
-    _convert_math_scripts(element)
-    for para in element.find_all("p"):
-        para.attrs["data-texsmith-latex"] = "true"
-
-    raw_text = element.get_text(strip=True)
-    match = _SOLUTION_PATTERN.match(raw_text)
-    if not match:
-        return
-
-    attrs = (match.group("attrs") or "").replace("\\", "")
-    lines_value = None
-    grid_value = None
-    box_value = None
-    if attrs:
-        lines_match = _LINES_PATTERN.search(attrs)
-        if lines_match:
-            lines_value = lines_match.group(1)
-        grid_match = _GRID_PATTERN.search(attrs)
-        if grid_match:
-            grid_value = grid_match.group(1)
-        box_match = _BOX_PATTERN.search(attrs)
-        if box_match:
-            box_value = box_match.group(1)
-
-    begin_env, end_env = _solution_env(
-        lines_value,
-        grid_value,
-        box_value,
-        _text_style(context),
-        compact_mode=in_compact_mode(context),
-        solution_mode=in_solution_mode(context),
-    )
-
-    content_nodes: list[object] = []
-    cursor = element.next_sibling
-    while cursor is not None:
-        if isinstance(cursor, Tag):
-            if cursor.name and cursor.name.lower() in {"h1", "h2", "h3", "h4", "h5", "h6", "hr"}:
-                break
-            cursor_classes = gather_classes(cursor.get("class"))
-            if "latex-raw" in cursor_classes or cursor.get("data-texsmith-latex") == "true":
-                break
-            if cursor.name == "p":
-                candidate = cursor.get_text(strip=True)
-                if _SOLUTION_PATTERN.match(candidate):
-                    break
-        content_nodes.append(cursor)
-        cursor = cursor.next_sibling
-
-    candidate: Tag | None = None
-    for node in content_nodes:
-        if isinstance(node, NavigableString) and not node.strip():
-            continue
-        if isinstance(node, Tag):
-            candidate = node
-        break
-
-    if candidate is not None:
-        pre = candidate if candidate.name == "pre" else candidate.find("pre")
-        if pre is not None:
-            code_text = pre.get_text()
-            html = render_markdown(code_text, exam_markdown_extensions()).html
-            soup = BeautifulSoup(html, "html.parser")
-            _convert_math_scripts(soup)
-            for para in soup.find_all("p"):
-                para.attrs["data-texsmith-latex"] = "true"
-            replacement_nodes = list(soup.body.contents) if soup.body else list(soup.contents)
-            for new_node in replacement_nodes:
-                candidate.insert_before(new_node)
-            candidate.decompose()
-            content_nodes = [
-                node
-                for node in replacement_nodes
-                if not (isinstance(node, NavigableString) and not node.strip())
-            ]
-
-    begin_node = mark_processed(NavigableString(begin_env))
-    element.replace_with(begin_node)
-
-    last_node: object | None = None
-    for node in reversed(content_nodes):
-        if isinstance(node, NavigableString) and not node.strip():
-            continue
-        last_node = node
-        break
-
-    if last_node is None:
-        begin_node.insert_after(NavigableString(end_env))
-    else:
-        last_node.insert_after(NavigableString(end_env))
+    _render_solution_admonition(element, context)
 
 
 @renders(
@@ -992,85 +798,7 @@ def render_solution_admonition(element: Tag, context: RenderContext) -> None:
 )
 def render_solution_callouts(element: Tag, context: RenderContext) -> None:
     """Convert solution callouts into exam.cls solution environments."""
-    if element.parent is None:
-        return
-    classes = gather_classes(element.get("class"))
-    title = element.attrs.pop("data-callout-title", "")
-    is_solution = (
-        "solution" in classes
-        or "texsmith-solution" in classes
-        or title.strip().lower() == "solution"
-    )
-    if not is_solution:
-        return
-
-    _convert_math_scripts(element)
-    for para in element.find_all("p"):
-        para.attrs["data-texsmith-latex"] = "true"
-
-    element.name = "div"
-    element.attrs["data-callout-skip"] = "true"
-    attrs = None
-    if title:
-        attrs_match = _ATTRS_BLOCK_PATTERN.search(title)
-        if attrs_match:
-            attrs = attrs_match.group("attrs")
-            title = title[: attrs_match.start()].strip()
-
-    if attrs is None:
-        attrs = ""
-
-    attr_values: list[str] = []
-    for key in ("lines", "grid", "box"):
-        if key in element.attrs:
-            attr_values.append(f"{key}={element.attrs[key]}")
-    if attr_values:
-        attrs = ",".join([attrs, *attr_values]).strip(",")
-
-    lines_value = None
-    grid_value = None
-    box_value = None
-    if attrs:
-        lines_match = _LINES_PATTERN.search(attrs)
-        if lines_match:
-            lines_value = lines_match.group(1)
-        grid_match = _GRID_PATTERN.search(attrs)
-        if grid_match:
-            grid_value = grid_match.group(1)
-        box_match = _BOX_PATTERN.search(attrs)
-        if box_match:
-            box_value = box_match.group(1)
-
-    for img in list(element.find_all("img")):
-        _render_images(img, context)
-
-    begin_env, end_env = _solution_env(
-        lines_value,
-        grid_value,
-        box_value,
-        _text_style(context),
-        compact_mode=in_compact_mode(context),
-        solution_mode=in_solution_mode(context),
-    )
-    body = element.find("div", class_="texsmith-solution")
-    title_node = element.find("p", class_="admonition-title")
-    if title_node is not None:
-        title_node.decompose()
-    title_node = element.find("p", class_="texsmith-solution-title")
-    if title_node is not None:
-        title_node.decompose()
-    content_nodes = list(body.contents) if body is not None else list(element.contents)
-    begin_node = mark_processed(NavigableString(begin_env))
-    end_node = mark_processed(NavigableString(end_env))
-    if content_nodes:
-        content_nodes[0].insert_before(begin_node)
-        content_nodes[-1].insert_after(end_node)
-        if body is not None:
-            body.unwrap()
-        element.unwrap()
-    else:
-        element.replace_with(begin_node)
-        begin_node.insert_after(end_node)
+    _render_solution_callouts(element, context)
 
 
 @renders(
@@ -1083,20 +811,7 @@ def render_solution_callouts(element: Tag, context: RenderContext) -> None:
 )
 def promote_solution_admonitions(element: Tag, _context: RenderContext) -> None:
     """Convert solution admonitions into exam solutions before callout handling."""
-    classes = gather_classes(element.get("class"))
-    if "admonition" not in classes:
-        return
-
-    title_node = element.find("p", class_="admonition-title")
-    title = title_node.get_text(strip=True) if title_node else ""
-    is_solution = "solution" in classes or title.strip().lower().startswith("solution")
-    if not is_solution:
-        return
-
-    new_classes = [cls for cls in classes if cls not in {"admonition", "solution"}]
-    if "texsmith-solution" not in new_classes:
-        new_classes.append("texsmith-solution")
-    element["class"] = new_classes
+    _promote_solution_admonitions(element, _context)
 
 
 @renders(
@@ -1109,10 +824,7 @@ def promote_solution_admonitions(element: Tag, _context: RenderContext) -> None:
 )
 def render_solution_div_admonitions(element: Tag, context: RenderContext) -> None:
     """Convert solution divs before generic callout handling."""
-    classes = gather_classes(element.get("class"))
-    if "texsmith-solution" not in classes:
-        return
-    render_solution_callouts(element, context)
+    _render_solution_div_admonitions(element, context)
 
 
 @renders(
@@ -1128,155 +840,7 @@ def render_solution_div_admonitions(element: Tag, context: RenderContext) -> Non
 )
 def render_exam_headings(element: Tag, context: RenderContext) -> None:
     """Render Markdown headings as native exam.cls questions/parts."""
-    for anchor in element.find_all("a"):
-        anchor.unwrap()
-
-    drop_title = context.runtime.get("drop_title")
-    if drop_title:
-        context.runtime["drop_title"] = False
-        latex = context.formatter.pagestyle(text="plain")
-        element.replace_with(mark_processed(NavigableString(latex)))
-        return
-
-    raw_text = element.get_text(strip=False)
-    heading_attrs: dict[str, str] = {}
-    stripped_heading = raw_text.strip()
-    attrs_match = _ATTRS_BLOCK_PATTERN.search(stripped_heading)
-    if attrs_match:
-        parsed_attrs = parse_heading_attrs(attrs_match.group("attrs"))
-        if parsed_attrs:
-            heading_attrs = parsed_attrs
-            raw_text = stripped_heading[: attrs_match.start()].rstrip()
-    if not heading_attrs:
-        dash_attrs = extract_dash_attrs_prefix(stripped_heading)
-        if dash_attrs:
-            attrs_text, tail_text = dash_attrs
-            parsed_attrs = parse_heading_attrs(attrs_text)
-            if parsed_attrs:
-                heading_attrs = parsed_attrs
-                raw_text = tail_text or "-"
-    if not heading_attrs:
-        dash_attrs_match = _HEADING_DASH_ATTRS_PATTERN.match(stripped_heading)
-        if dash_attrs_match:
-            parsed_attrs = parse_heading_attrs(dash_attrs_match.group("attrs"))
-            if parsed_attrs:
-                heading_attrs = parsed_attrs
-                raw_text = "-"
-    text = render_moving_text(
-        raw_text,
-        context,
-        legacy_accents=getattr(context.config, "legacy_latex_accents", False),
-        escape="\\" not in raw_text,
-        wrap_scripts=True,
-    )
-    plain_text = BeautifulSoup(raw_text, "html.parser").get_text(strip=True)
-    empty_title = is_empty_title(plain_text)
-    if not empty_title:
-        rendered_clean = text.replace("\\", "").strip()
-        if matches_empty_title_pattern(rendered_clean):
-            empty_title = True
-            text = ""
-
-    level = int(element.name[1:])
-    heading_attr = is_truthy_attribute(
-        coerce_attribute(element.get("heading"))
-        or coerce_attribute(element.get("data-heading"))
-        or heading_attrs.get("heading")
-    )
-    heading_mode_level = context.runtime.get("heading_mode_level")
-    if heading_attr:
-        context.runtime["heading_mode_level"] = level
-        heading_mode_level = level
-    elif isinstance(heading_mode_level, int) and level <= heading_mode_level:
-        context.runtime["heading_mode_level"] = None
-        heading_mode_level = None
-    base_level = context.runtime.get("base_level", 0)
-    rendered_level = level + base_level - 1
-
-    ref = coerce_attribute(element.get("id"))
-    points = normalize_points(
-        coerce_attribute(element.get("points"))
-        or coerce_attribute(element.get("data-points"))
-        or heading_attrs.get("points")
-    )
-    answer_text = normalize_answer_text(
-        coerce_attribute(element.get("answer"))
-        or coerce_attribute(element.get("data-answer"))
-        or heading_attrs.get("answer")
-    )
-    answerline = (
-        _answerline_latex(answer_text, context)
-        if (answer_text and not in_compact_mode(context))
-        else None
-    )
-    defer_answerline = bool(answerline and _should_defer_answerline_for_heading_text(raw_text))
-    if not ref:
-        slug = slugify(plain_text, separator="-")
-        ref = slug or None
-
-    use_vanilla_heading = heading_attr or (
-        isinstance(heading_mode_level, int) and level > heading_mode_level
-    )
-    lines: list[str] = []
-    if use_vanilla_heading:
-        _close_parts(context, lines)
-        lines.append(r"\ExamQuestionsEnd")
-        latex = context.formatter.heading(
-            text=text,
-            level=rendered_level,
-            ref=ref,
-            numbered=context.runtime.get("numbered", True),
-        )
-        if lines:
-            latex = "\n".join(lines + [latex])
-        if answerline and not defer_answerline:
-            _attach_answerline_after_question(element, answerline)
-        elif answerline and defer_answerline:
-            context.runtime["pending_question_answerline"] = answerline
-        element.replace_with(mark_processed(NavigableString(latex)))
-        context.state.add_heading(level=rendered_level, text=plain_text, ref=ref)
-        return
-
-    lines.append(r"\ExamQuestionsBegin")
-    if rendered_level == 1:
-        _close_parts(context, lines)
-    elif rendered_level == 2:
-        _close_subparts(context, lines)
-        _ensure_parts(context, lines)
-    elif rendered_level == 3:
-        _close_subsubparts(context, lines)
-        _ensure_subparts(context, lines)
-    elif rendered_level == 4:
-        _ensure_subsubparts(context, lines)
-    else:
-        latex = context.formatter.heading(
-            text=text,
-            level=rendered_level,
-            ref=ref,
-            numbered=context.runtime.get("numbered", True),
-            points=points,
-        )
-        element.replace_with(mark_processed(NavigableString(latex)))
-        context.state.add_heading(level=rendered_level, text=plain_text, ref=ref)
-        return
-
-    lines.append(
-        _heading_latex(
-            level=rendered_level,
-            text=text,
-            empty_title=empty_title,
-            points=points,
-            ref=ref,
-        )
-    )
-
-    latex = "\n".join(lines)
-    if answerline and not defer_answerline:
-        _attach_answerline_after_question(element, answerline)
-    elif answerline and defer_answerline:
-        context.runtime["pending_question_answerline"] = answerline
-    element.replace_with(mark_processed(NavigableString(latex)))
-    context.state.add_heading(level=rendered_level, text=plain_text, ref=ref)
+    _render_exam_headings(element, context)
 
 
 @renders(
@@ -1289,11 +853,7 @@ def render_exam_headings(element: Tag, context: RenderContext) -> None:
 )
 def close_open_parts(root: Tag, context: RenderContext) -> None:
     """Close any still-open exam parts environments at document end."""
-    lines: list[str] = []
-    _close_parts(context, lines)
-    if not lines:
-        return
-    root.append(NavigableString("\n" + "\n".join(lines) + "\n"))
+    _close_open_parts(root, context)
 
 
 def register(renderer: object) -> None:
