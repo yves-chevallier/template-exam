@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
+import re
 
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString, Tag
 from slugify import slugify
-from texsmith.adapters.markdown import render_markdown
 from texsmith.adapters.handlers._helpers import coerce_attribute, mark_processed
 from texsmith.adapters.handlers.admonitions import gather_classes
 from texsmith.adapters.handlers.blocks import _prepare_rich_text_content
 from texsmith.adapters.handlers.code import _is_ascii_art, _resolve_code_engine
 from texsmith.adapters.handlers.inline import _payload_is_block_environment
 from texsmith.adapters.handlers.media import render_images as _render_images
+from texsmith.adapters.markdown import render_markdown
 from texsmith.core.callouts import DEFAULT_CALLOUTS, merge_callouts, normalise_callouts
 from texsmith.core.context import RenderContext
 from texsmith.core.rules import DOCUMENT_NODE, RenderPhase, renders

@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from texsmith.adapters.markdown import DEFAULT_MARKDOWN_EXTENSIONS, deduplicate_markdown_extensions
+from texsmith.adapters.markdown import (
+    DEFAULT_MARKDOWN_EXTENSIONS,
+    deduplicate_markdown_extensions,
+)
 
 
 SOLUTION_EXTENSION = "texsmith_template_exam.solution_md:SolutionAdmonitionExtension"

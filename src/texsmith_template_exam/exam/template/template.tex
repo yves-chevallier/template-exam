@@ -4,6 +4,7 @@
 \BLOCK{ set subtitle_value = subtitle|default('')|trim }
 \BLOCK{ set author_value = author|default('')|trim }
 \BLOCK{ set date_value = date|default('')|trim }
+\BLOCK{ set version_value = version|default('')|string|trim }
 \BLOCK{ set titlepage_raw = titlepage|default('cover')|string|lower }
 \BLOCK{ set titlepage_minimal = titlepage_raw == 'minimal' }
 \BLOCK{ set fillin_style_raw = fillin_style|default('line')|string|lower|trim }
@@ -595,6 +596,8 @@
 \BLOCK{ set author_trim = author_rendered|trim }
 \BLOCK{ set date_formatted = date_value|exam_date(lang) }
 \BLOCK{ set date_trim = date_formatted|default('')|trim }
+\BLOCK{ set version_formatted = version_value|exam_version }
+\BLOCK{ set version_trim = version_formatted|default('')|trim }
 \BLOCK{ set school_trim = school|default('')|trim }
 \BLOCK{ set course_trim = course|default('')|trim }
 \BLOCK{ set duration_trim = duration|default('')|string|trim }
@@ -619,7 +622,13 @@
 \title{\VAR{display_title}}
 \author{\VAR{author_rendered}}
 
-\def\thedate{\VAR{date_formatted if date_formatted else "\\today"}}
+\BLOCK{ set date_display = date_formatted if date_formatted else "\\today" }
+\BLOCK{ if version_trim and date_formatted }
+  \BLOCK{ set date_display = date_display ~ ", " ~ version_trim }
+\BLOCK{ elif version_trim }
+  \BLOCK{ set date_display = date_display ~ " " ~ version_trim }
+\BLOCK{ endif }
+\def\thedate{\VAR{date_display}}
 \def\department{\VAR{department}}
 \def\school{\VAR{school}}
 \def\subtitle{\VAR{subtitle}}

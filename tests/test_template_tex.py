@@ -35,3 +35,9 @@ def test_template_contains_code_spacing_tuning() -> None:
     assert r"\if@inlabel\else\vspace{0.5em}\fi" in text
     assert r"\needspace{6\baselineskip}" in text
 
+
+def test_template_supports_version_display() -> None:
+    text = _template_text()
+    assert "version_value" in text
+    assert "exam_version" in text
+    assert "date_display" in text

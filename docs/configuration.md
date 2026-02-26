@@ -26,6 +26,7 @@ You can also override values at render time with TeXSmith template overrides
 | `title` | string | `""` | any string | Exam title (from metadata or promoted heading). |
 | `author` / `authors` | string, mapping, or list | `""` | string or structured author data | Author or instructor name(s). |
 | `date` | string | `""` | ISO date/time or free text | Exam date shown on title page/header. |
+| `version` | string | `""` | any string or `git` | Version label appended to the date (use `git` for git describe / short commit). |
 | `exam.titlepage` / `titlepage` | string | `"cover"` | `cover`, `minimal` | Selects full cover page or minimal inline title block. |
 | `exam.type` / `type` | string | `"exam"` | any string | Exam type label (for example `TE`, `Exam`). |
 | `exam.department` / `department` | string | `""` | any string | Department code or name. |

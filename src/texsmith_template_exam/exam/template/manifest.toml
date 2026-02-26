@@ -57,6 +57,14 @@ allow_empty = true
 sources = ["date"]
 description = "Exam date (ISO or free-form)."
 
+[latex.template.attributes.version]
+default = ""
+type = "string"
+escape = "latex"
+allow_empty = true
+sources = ["version", "exam.version"]
+description = "Exam version string (or 'git' to use git describe/commit)."
+
 [latex.template.attributes.titlepage]
 default = "cover"
 type = "string"
