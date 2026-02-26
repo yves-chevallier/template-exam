@@ -21,6 +21,7 @@ from texsmith.core.rules import DOCUMENT_NODE, RenderPhase, renders
 from texsmith.fonts.scripts import render_moving_text
 
 from texsmith_template_exam.exam.fillin import build_fillin_latex, compute_fillin_width
+from texsmith_template_exam.exam.mode import in_compact_mode, in_solution_mode
 from texsmith_template_exam.markdown import exam_markdown_extensions
 from texsmith_template_exam.exam.utils import (
     choice_label,
@@ -44,6 +45,8 @@ _normalize_answer_text = normalize_answer_text
 _extract_dash_attrs_prefix = extract_dash_attrs_prefix
 _parse_heading_attrs = parse_heading_attrs
 _choice_label = choice_label
+_in_solution_mode = in_solution_mode
+_in_compact_mode = in_compact_mode
 
 
 def _flag(context: RenderContext, key: str) -> bool:
@@ -216,107 +219,6 @@ def _exam_style(context: RenderContext) -> dict[str, object]:
         return {}
     style = overrides.get("style")
     return style if isinstance(style, dict) else {}
-
-
-def _in_solution_mode(context: RenderContext) -> bool:
-    def _is_truthy(value: object) -> bool:
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            return value.strip().lower() in {"1", "true", "yes", "on"}
-        return False
-
-    overrides = context.runtime.get("template_overrides")
-    if isinstance(overrides, dict):
-        value = overrides.get("solution")
-        if _is_truthy(value):
-            return True
-        press = overrides.get("press")
-        if isinstance(press, dict) and _is_truthy(press.get("solution")):
-            return True
-    value = context.runtime.get("solution")
-    if _is_truthy(value):
-        return True
-
-    front_matter_value = _front_matter_flag(context, ("solution", "exam.solution", "press.solution"))
-    if _is_truthy(front_matter_value):
-        return True
-
-    # Fallback for project solution builds when overrides are not propagated.
-    document_path = context.runtime.get("document_path")
-    if document_path is not None:
-        path_text = str(document_path).replace("\\", "/").lower()
-        if "/solution/" in path_text or path_text.endswith("-solutions.md") or ".solution." in path_text:
-            return True
-    return False
-
-
-def _in_compact_mode(context: RenderContext) -> bool:
-    def _is_truthy(value: object) -> bool:
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            return value.strip().lower() in {"1", "true", "yes", "on"}
-        return False
-
-    overrides = context.runtime.get("template_overrides")
-    if isinstance(overrides, dict):
-        value = overrides.get("compact")
-        if _is_truthy(value):
-            return True
-        press = overrides.get("press")
-        if isinstance(press, dict) and _is_truthy(press.get("compact")):
-            return True
-    value = context.runtime.get("compact")
-    if _is_truthy(value):
-        return True
-
-    front_matter_value = _front_matter_flag(context, ("compact", "exam.compact", "press.compact"))
-    if _is_truthy(front_matter_value):
-        return True
-
-    # Fallback for project light builds where compact mode is generated in a
-    # dedicated source directory before front-matter overrides are propagated.
-    document_path = context.runtime.get("document_path")
-    if document_path is not None:
-        path_text = str(document_path).replace("\\", "/").lower()
-        if "/light-src/" in path_text or path_text.endswith("-light.md") or ".light." in path_text:
-            return True
-    return False
-
-
-def _front_matter_flag(context: RenderContext, keys: tuple[str, ...]) -> object:
-    cache_key = "_texsmith_front_matter"
-    cached = context.runtime.get(cache_key)
-    if cached is None:
-        document_path = context.runtime.get("document_path")
-        front_matter: dict[str, object] = {}
-        if document_path is not None:
-            try:
-                from texsmith.adapters.markdown import split_front_matter
-
-                raw = Path(document_path).read_text(encoding="utf-8")
-                front_matter, _ = split_front_matter(raw)
-            except Exception:
-                front_matter = {}
-        context.runtime[cache_key] = front_matter
-        cached = front_matter
-    if not isinstance(cached, dict):
-        return None
-    for key in keys:
-        if "." in key:
-            cursor: object = cached
-            for part in key.split("."):
-                if not isinstance(cursor, dict):
-                    cursor = None
-                    break
-                cursor = cursor.get(part)
-            if cursor is not None:
-                return cursor
-        else:
-            if key in cached:
-                return cached.get(key)
-    return None
 
 
 def _choice_style(context: RenderContext) -> str:
@@ -671,7 +573,7 @@ def _replace_fillin_placeholders(
                 answer_latex=answer,
                 attrs=attrs,
                 context=context,
-                solution_mode=_in_solution_mode(context),
+                solution_mode=in_solution_mode(context),
             )
             segments.append(mark_processed(NavigableString(latex)))
             cursor = match.end()
@@ -738,7 +640,7 @@ def render_table_fillin_cells(element: Tag, context: RenderContext) -> None:
         answer_latex=answer,
         attrs=attrs,
         context=context,
-        solution_mode=_in_solution_mode(context),
+        solution_mode=in_solution_mode(context),
     )
     element.clear()
     element.append(mark_processed(NavigableString(latex)))
@@ -845,7 +747,7 @@ def render_exam_checkboxes(element: Tag, context: RenderContext) -> None:
         lines = ["\\begin{samepage}", "\\begin{columen}[5]", "\\begin{checkboxes}"]
     else:
         lines = ["\\begin{samepage}", "\\begin{columen}[5]", "\\begin{choices}"]
-    show_answerline = not _in_compact_mode(context)
+    show_answerline = not in_compact_mode(context)
     correct_labels: list[str] = []
     for index, (checked, text) in enumerate(items):
         if checked:
@@ -910,7 +812,7 @@ def render_exam_fillin(element: Tag, context: RenderContext) -> None:
         attrs=attrs,
         context=context,
     )
-    if _in_solution_mode(context):
+    if in_solution_mode(context):
         latex = f"\\fillin[{answer}]"
     else:
         latex = f"\\fillin[{answer}][{width_value}]"
@@ -1015,8 +917,8 @@ def render_solution_admonition(element: Tag, context: RenderContext) -> None:
         grid_value,
         box_value,
         _text_style(context),
-        compact_mode=_in_compact_mode(context),
-        solution_mode=_in_solution_mode(context),
+        compact_mode=in_compact_mode(context),
+        solution_mode=in_solution_mode(context),
     )
 
     content_nodes: list[object] = []
@@ -1147,8 +1049,8 @@ def render_solution_callouts(element: Tag, context: RenderContext) -> None:
         grid_value,
         box_value,
         _text_style(context),
-        compact_mode=_in_compact_mode(context),
-        solution_mode=_in_solution_mode(context),
+        compact_mode=in_compact_mode(context),
+        solution_mode=in_solution_mode(context),
     )
     body = element.find("div", class_="texsmith-solution")
     title_node = element.find("p", class_="admonition-title")
@@ -1304,7 +1206,7 @@ def render_exam_headings(element: Tag, context: RenderContext) -> None:
     )
     answerline = (
         _answerline_latex(answer_text, context)
-        if (answer_text and not _in_compact_mode(context))
+        if (answer_text and not in_compact_mode(context))
         else None
     )
     defer_answerline = bool(answerline and _should_defer_answerline_for_heading_text(raw_text))

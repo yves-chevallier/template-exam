@@ -15,9 +15,9 @@
 - [x] Ajouter/adapter les tests ciblés pour couvrir les cas `solution` et `width`.
 
 ## Phase 3 — Centralisation des modes (solution/compact)
-- [ ] Créer `src/texsmith_template_exam/exam/mode.py` pour `_in_solution_mode` et `_in_compact_mode`.
-- [ ] Déplacer la logique `_front_matter_flag` et le cache associé dans ce module.
-- [ ] Mettre à jour les appels dans les handlers.
+- [x] Créer `src/texsmith_template_exam/exam/mode.py` pour `_in_solution_mode` et `_in_compact_mode`.
+- [x] Déplacer la logique `_front_matter_flag` et le cache associé dans ce module.
+- [x] Mettre à jour les appels dans les handlers.
 
 ## Phase 4 — Découpage par domaine
 - [ ] Extraire le rendu des headings vers `src/texsmith_template_exam/exam/headings.py`.
