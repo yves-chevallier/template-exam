@@ -36,6 +36,6 @@
 - [x] Remplacer les imports directs dans les handlers.
 
 ## Phase 7 — Tests et validation
-- [ ] Ajouter des tests unitaires ciblés pour les nouveaux modules.
-- [ ] Exécuter l’ensemble de la suite de tests.
-- [ ] Documenter les points d’extension si nécessaire.
+- [x] Ajouter des tests unitaires ciblés pour les nouveaux modules.
+- [x] Exécuter l’ensemble de la suite de tests.
+- [x] Documenter les points d’extension si nécessaire.

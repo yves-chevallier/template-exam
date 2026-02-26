@@ -150,3 +150,10 @@ uv run ruff format .
 - `docs/`: MkDocs documentation
 - `demo/`: runnable examples
 - `tests/`: automated tests
+
+## Extension points
+
+- Renderer handlers: `src/texsmith_template_exam/exam_renderer.py` delegates to domain modules in `src/texsmith_template_exam/exam/`.
+- Markdown extensions: `src/texsmith_template_exam/markdown.py` exports `exam_markdown_extensions()`.
+- Template filters: `src/texsmith_template_exam/exam/__init__.py` registers `markdown_to_latex`, `exam_date`, `exam_version`.
+- Compatibility layer for texsmith internals: `src/texsmith_template_exam/exam/texsmith_compat.py`.
