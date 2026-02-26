@@ -92,11 +92,18 @@
   \BLOCK{ set label_duration = "Duration" }
 \BLOCK{ endif }
 \BLOCK{ set label_problem_override = '' }
+\BLOCK{ set points_enabled = true }
 \BLOCK{ if exam is defined and exam }
   \BLOCK{ set label_problem_override = exam.get('problem-label', exam.get('problem_label', ''))|string|trim }
+\BLOCK{ if exam.get('points') is not none }
+  \BLOCK{ set points_enabled = exam.get('points') }
+\BLOCK{ endif }
 \BLOCK{ endif }
 \BLOCK{ if not label_problem_override }
   \BLOCK{ set label_problem_override = problem_label|default('', true)|string|trim }
+\BLOCK{ endif }
+\BLOCK{ if points is not none }
+  \BLOCK{ set points_enabled = points }
 \BLOCK{ endif }
 \BLOCK{ set label_problem = label_problem_override|default(label_problem_default, true)|trim }
 \BLOCK{ set next_page_advice = next_page_advice|default(true) }
@@ -104,10 +111,14 @@
 \BLOCK{ set combined_docclass_options = base_docclass_options[1:-1] if base_docclass_options else '' }
 \BLOCK{ set option_parts = [] }
 \BLOCK{ if combined_docclass_options }\BLOCK{ set option_parts = option_parts + [combined_docclass_options] }\BLOCK{ endif }
-\BLOCK{ set option_parts = option_parts + ['addpoints'] }
+\BLOCK{ if points_enabled }
+  \BLOCK{ set option_parts = option_parts + ['addpoints'] }
+\BLOCK{ endif }
 \BLOCK{ set effective_documentclass_options = '[' ~ option_parts|join(',') ~ ']' if option_parts else '' }
 \documentclass\VAR{effective_documentclass_options}{exam}
+\BLOCK{ if points_enabled }
 \pointsinrightmargin
+\BLOCK{ endif }
 \BLOCK{ if solution }
 \printanswers
 \BLOCK{ endif }

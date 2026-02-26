@@ -9,6 +9,7 @@ next_page_advice: false
 language: en
 course: Analysis IV
 titlepage: minimal
+points: false
 rules:
   - Write your **last name** and **first name** on the first page.
   - Write **legibly**, using a pen or a soft pencil.
