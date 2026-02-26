@@ -10,6 +10,7 @@ language: en
 course: Analysis IV
 titlepage: minimal
 points: false
+version: git
 rules:
   - Write your **last name** and **first name** on the first page.
   - Write **legibly**, using a pen or a soft pencil.

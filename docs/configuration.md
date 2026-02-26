@@ -33,6 +33,7 @@ You can also override values at render time with TeXSmith template overrides
 | `exam.school` / `school` | string | `""` | any string | School or institution name. |
 | `exam.course` / `course` | string | `""` | any string | Course name or course code. |
 | `exam.problem-label` / `exam.problem_label` / `problem-label` / `problem_label` | string | language-dependent default (`Problem`, `Problème`, etc.) | any string | Overrides the question label used in headers and question titles. |
+| `exam.points` / `points` | boolean | `true` | `true`, `false` | Enables/disables point display and the cover-page grade table. |
 | `exam.fillin-style` / `exam.fillin_style` / `fillin-style` / `fillin_style` | string | `"line"` | `line`, `dotted` | Controls the visual style of `\fillin` blanks on the student copy. |
 | `exam.compact` / `compact` | boolean | `false` | `true`, `false` | Enables compact rendering mode (for example removes some answer lines in multiple-choice blocks). |
 | `exam.duration` / `duration` | any | `""` | number or string | Exam duration, displayed on the cover page rules box. |

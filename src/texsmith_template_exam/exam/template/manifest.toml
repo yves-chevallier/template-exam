@@ -112,6 +112,13 @@ allow_empty = true
 sources = ["exam.problem-label", "exam.problem_label", "problem-label", "problem_label"]
 description = "Label for each question block (defaults to language-specific 'Problem')."
 
+[latex.template.attributes.points]
+default = true
+type = "boolean"
+allow_empty = false
+sources = ["exam.points", "points"]
+description = "Enable point display and cover-page grade table."
+
 [latex.template.attributes.fillin_style]
 default = "line"
 type = "string"
