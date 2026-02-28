@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 
-TEMPLATE = Path(__file__).resolve().parents[1] / "src/texsmith_template_exam/exam/template/template.tex"
+TEMPLATE = (
+    Path(__file__).resolve().parents[1] / "src/texsmith_template_exam/exam/template/template.tex"
+)
 
 
 def _template_text() -> str:

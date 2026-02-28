@@ -4,7 +4,9 @@ from texsmith_template_exam.exam import styles
 
 
 class _DummyContext:
-    def __init__(self, runtime: dict[str, object] | None = None, config: object | None = None) -> None:
+    def __init__(
+        self, runtime: dict[str, object] | None = None, config: object | None = None
+    ) -> None:
         self.runtime = runtime or {}
         self.config = config
 
@@ -20,6 +22,8 @@ def test_text_style_defaults_and_aliases() -> None:
 
 
 def test_style_reads_front_matter_runtime_fallback() -> None:
-    ctx = _DummyContext(runtime={"front_matter": {"style": {"choices": "checkboxes", "text": "line"}}})
+    ctx = _DummyContext(
+        runtime={"front_matter": {"style": {"choices": "checkboxes", "text": "line"}}}
+    )
     assert styles.choice_style(ctx) == "checkbox"
     assert styles.text_style(ctx) == "lines"

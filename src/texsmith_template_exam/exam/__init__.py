@@ -41,7 +41,16 @@ def _ensure_runtime_template_overrides_bridge() -> None:
         _RUNTIME_BRIDGE_PATCHED = True
         return
 
-    def _wrapped_build_runtime_common(*, binding, binder_context, document, strategy, diagrams_backend, emitter, http_user_agent):  # type: ignore[no-untyped-def]
+    def _wrapped_build_runtime_common(
+        *,
+        binding: Any,
+        binder_context: Any,
+        document: Any,
+        strategy: Any,
+        diagrams_backend: Any,
+        emitter: Any,
+        http_user_agent: Any,
+    ) -> dict[str, object]:
         runtime_common = original(
             binding=binding,
             binder_context=binder_context,
@@ -56,8 +65,8 @@ def _ensure_runtime_template_overrides_bridge() -> None:
             runtime_common.setdefault("template_overrides", dict(overrides))
         return runtime_common
 
-    setattr(_wrapped_build_runtime_common, "__texsmith_exam_runtime_bridge__", True)
-    setattr(conversion_core, "_build_runtime_common", _wrapped_build_runtime_common)
+    _wrapped_build_runtime_common.__texsmith_exam_runtime_bridge__ = True
+    conversion_core._build_runtime_common = _wrapped_build_runtime_common  # noqa: SLF001
     _RUNTIME_BRIDGE_PATCHED = True
 
 

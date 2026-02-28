@@ -9,7 +9,9 @@ from texsmith_template_exam.exam.utils import normalize_style_choice
 
 
 def exam_style(context: RenderContext) -> dict[str, object]:
-    style = resolve_value(context, ("style", "exam.style"), include_runtime=True, include_front_matter=True)
+    style = resolve_value(
+        context, ("style", "exam.style"), include_runtime=True, include_front_matter=True
+    )
     return style if isinstance(style, dict) else {}
 
 

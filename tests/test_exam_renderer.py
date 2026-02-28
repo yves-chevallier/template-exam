@@ -44,7 +44,7 @@ def test_extract_dash_attrs_prefix_parses_and_returns_tail() -> None:
 
 
 def test_parse_heading_attrs_supports_multiple_quote_styles() -> None:
-    parsed = er._parse_heading_attrs('points=2 answer="yes" alt=\'ok\' french=«bon»')
+    parsed = er._parse_heading_attrs("points=2 answer=\"yes\" alt='ok' french=«bon»")
     assert parsed["points"] == "2"
     assert parsed["answer"] == "yes"
     assert parsed["alt"] == "ok"

@@ -63,4 +63,7 @@ def test_exam_version_git_warns_without_repo(monkeypatch) -> None:
     with warnings.catch_warnings(record=True) as records:
         warnings.simplefilter("always")
         assert exam_version.format_exam_version("git") == ""
-        assert any("version=git requested but no git repository was found" in str(w.message) for w in records)
+        assert any(
+            "version=git requested but no git repository was found" in str(w.message)
+            for w in records
+        )

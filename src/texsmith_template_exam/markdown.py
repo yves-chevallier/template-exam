@@ -13,6 +13,4 @@ SOLUTION_EXTENSION = "texsmith_template_exam.solution_md:SolutionAdmonitionExten
 
 def exam_markdown_extensions() -> list[str]:
     """Return the Markdown extensions with the exam solution block enabled."""
-    return deduplicate_markdown_extensions(
-        [*DEFAULT_MARKDOWN_EXTENSIONS, SOLUTION_EXTENSION]
-    )
+    return deduplicate_markdown_extensions([*DEFAULT_MARKDOWN_EXTENSIONS, SOLUTION_EXTENSION])

@@ -40,8 +40,7 @@ def get_git_version() -> str:
     repo_root = resolve_git_root()
     if repo_root is None:
         warnings.warn(
-            "version=git requested but no git repository was found; "
-            "cannot resolve git version.",
+            "version=git requested but no git repository was found; cannot resolve git version.",
             stacklevel=2,
         )
         return ""

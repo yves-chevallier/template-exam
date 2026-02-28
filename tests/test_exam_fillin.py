@@ -4,7 +4,9 @@ from texsmith_template_exam.exam import fillin
 
 
 class _DummyContext:
-    def __init__(self, runtime: dict[str, object] | None = None, config: object | None = None) -> None:
+    def __init__(
+        self, runtime: dict[str, object] | None = None, config: object | None = None
+    ) -> None:
         self.runtime = runtime or {}
         self.config = config
 

@@ -73,7 +73,9 @@ def compute_fillin_width(
     if not width_value:
         scale_raw = extract_fillin_scale(attrs)
         scale = coerce_fillin_scale(
-            scale_raw if scale_raw else fillin_scale_from_context(context, default_scale=default_scale),
+            scale_raw
+            if scale_raw
+            else fillin_scale_from_context(context, default_scale=default_scale),
             default=default_scale,
         )
         width_value = auto_fillin_width(answer_raw, scale)

@@ -31,14 +31,18 @@ class _DummyConfig:
 
 
 class _DummyContext:
-    def __init__(self, *, config: object | None = None, runtime: dict[str, object] | None = None) -> None:
+    def __init__(
+        self, *, config: object | None = None, runtime: dict[str, object] | None = None
+    ) -> None:
         self.config = config or _DummyConfig()
         self.runtime = runtime or {}
         self.state = _DummyState()
         self.formatter = _DummyFormatter()
 
 
-def _render_heading(*, points_attr: str, config_points: bool, runtime: dict[str, object] | None = None) -> str:
+def _render_heading(
+    *, points_attr: str, config_points: bool, runtime: dict[str, object] | None = None
+) -> str:
     soup = BeautifulSoup(f"<h3 points='{points_attr}'>Part A</h3>", "html.parser")
     element = soup.find("h3")
     assert element is not None
